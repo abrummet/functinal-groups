@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Functional Group Finder</title>
+<meta name="description" content="Practice identifying functional groups in organic molecules: select the atoms, then name the group.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpolygon points='16,3 27,9.5 27,22.5 16,29 5,22.5 5,9.5' fill='none' stroke='%234f46e5' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23e11d48'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f3f4f9; --card:#ffffff; --card2:#f7f8fc; --line:#e3e6ef; --ink:#1d2433; --muted:#6b7385;
+  --accent:#4f46e5; --accent-ink:#ffffff; --accent-soft:#eceafd;
+  --good:#16a34a; --good-soft:#e8f7ee; --warn:#d97706; --warn-soft:#fdf3e2; --bad:#dc2626; --bad-soft:#fdecec;
+  --bond:#1d2433; --O:#d42a2a; --N:#2457d6; --H:#1d2433; --sel:#1d2433;
+  --g-alcohol:#2f80ed; --g-ether:#8b5cf6; --g-amine:#10a37f; --g-aldehyde:#e0a106; --g-ketone:#f2711c;
+  --g-acid:#e11d48; --g-amide:#0aa5c2; --g-aromatic:#d946ef; --g-ester:#a16207;
+  --shadow:0 1px 2px rgba(20,24,40,.05),0 6px 20px rgba(20,24,40,.06);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1220; --card:#181c2e; --card2:#1f2438; --line:#2b3150; --ink:#e7e9f3; --muted:#9aa1b9;
+  --accent:#8b85ff; --accent-ink:#0f1220; --accent-soft:#272a52;
+  --good:#34d399; --good-soft:#123227; --warn:#fbbf24; --warn-soft:#3a2d10; --bad:#f87171; --bad-soft:#3b1a1f;
+  --bond:#e7e9f3; --O:#ff7b7b; --N:#7aa7ff; --H:#e7e9f3; --sel:#ffffff;
+  --g-alcohol:#5aa2ff; --g-ether:#a78bfa; --g-amine:#34d399; --g-aldehyde:#facc15; --g-ketone:#fb923c;
+  --g-acid:#fb7185; --g-amide:#22d3ee; --g-aromatic:#e879f9; --g-ester:#d6a35c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1220; --card:#181c2e; --card2:#1f2438; --line:#2b3150; --ink:#e7e9f3; --muted:#9aa1b9;
+  --accent:#8b85ff; --accent-ink:#0f1220; --accent-soft:#272a52;
+  --good:#34d399; --good-soft:#123227; --warn:#fbbf24; --warn-soft:#3a2d10; --bad:#f87171; --bad-soft:#3b1a1f;
+  --bond:#e7e9f3; --O:#ff7b7b; --N:#7aa7ff; --H:#e7e9f3; --sel:#ffffff;
+  --g-alcohol:#5aa2ff; --g-ether:#a78bfa; --g-amine:#34d399; --g-aldehyde:#facc15; --g-ketone:#fb923c;
+  --g-acid:#fb7185; --g-amide:#22d3ee; --g-aromatic:#e879f9; --g-ester:#d6a35c;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25); color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{font-size:clamp(13px, .55vw + .9vh, 16px)}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  height:100dvh;overflow:hidden;display:grid;grid-template-rows:auto 1fr;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* header */
+header{display:flex;align-items:center;gap:1rem;padding:.6rem 1rem;min-width:0}
+.brand{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:1.1rem;letter-spacing:-.01em;white-space:nowrap}
+.brand svg{width:1.7rem;height:1.7rem}
+.tabs{display:flex;gap:.25rem;background:var(--card);padding:.25rem;border-radius:999px;box-shadow:var(--shadow);margin:0 auto}
+.tab{padding:.45rem .95rem;border-radius:999px;font-weight:650;font-size:.92rem;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:.4rem}
+.tab svg{width:1rem;height:1rem}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.tools{display:flex;gap:.4rem}
+.iconbtn{width:2.4rem;height:2.4rem;border-radius:50%;display:grid;place-items:center;background:var(--card);box-shadow:var(--shadow);color:var(--muted)}
+.iconbtn svg{width:1.15rem;height:1.15rem}
+.iconbtn:hover{color:var(--ink)}
+
+/* main layout */
+main{display:grid;grid-template-columns:minmax(0,1fr) clamp(270px,27vw,350px);gap:.8rem;padding:0 1rem 1rem;min-height:0}
+.card{background:var(--card);border-radius:18px;box-shadow:var(--shadow)}
+.stage{position:relative;min-height:0;min-width:0;overflow:hidden}
+#mol{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.stage.static #mol{cursor:default}
+.stage-top{position:absolute;top:.8rem;left:.9rem;right:.9rem;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none;gap:.5rem}
+.pill{background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:.3rem .75rem;font-size:.82rem;font-weight:650;color:var(--muted);display:flex;align-items:center;gap:.45rem}
+.pips{display:flex;gap:.3rem}
+.pip{width:.7rem;height:.7rem;border-radius:50%;border:2px solid var(--line);background:transparent;transition:all .3s}
+.pip.on{border-color:transparent}
+.stage-hint{position:absolute;left:.9rem;bottom:.7rem;right:.9rem;font-size:.8rem;color:var(--muted);pointer-events:none;text-align:center}
+.stage.shake{animation:shake .38s}
+@keyframes shake{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
+
+/* panel */
+.panel{display:flex;flex-direction:column;gap:.7rem;min-height:0}
+.box{padding:.8rem .9rem}
+.box h3{margin:0 0 .5rem;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:750;display:flex;justify-content:space-between;align-items:center}
+.levels{display:grid;grid-template-columns:repeat(5,1fr);gap:.3rem}
+.lvl{border-radius:10px;background:var(--card2);border:1px solid var(--line);padding:.35rem 0 .3rem;font-weight:750;font-size:1rem;display:flex;flex-direction:column;align-items:center;gap:.25rem}
+.lvl .bar{width:60%;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.lvl .bar i{display:block;height:100%;background:var(--good);width:0}
+.lvl[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.lvl[aria-pressed="true"] .bar{background:rgba(255,255,255,.35)}
+.lvl-desc{font-size:.8rem;color:var(--muted);margin-top:.45rem;min-height:1.1em}
+.scores{display:flex;gap:.5rem;margin-top:.6rem}
+.stat{flex:1;background:var(--card2);border-radius:12px;padding:.4rem .6rem}
+.stat b{display:block;font-size:1.35rem;line-height:1.15;font-variant-numeric:tabular-nums}
+.stat span{font-size:.7rem;color:var(--muted);font-weight:650;text-transform:uppercase;letter-spacing:.05em}
+.mult{display:inline-block;margin-left:.3rem;font-size:.75rem;font-weight:800;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:0 .3rem;vertical-align:middle}
+.timer{height:.55rem;border-radius:999px;background:var(--card2);overflow:hidden;border:1px solid var(--line)}
+.timer i{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--accent),var(--g-aromatic));transition:width .2s linear}
+.timer.low i{background:var(--bad)}
+.timeleft{font-variant-numeric:tabular-nums;color:var(--ink);text-transform:none;letter-spacing:0;font-size:.85rem}
+
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+.chip{display:flex;align-items:center;gap:.5rem;padding:.5rem .6rem;border-radius:12px;background:var(--card2);border:1px solid var(--line);font-weight:650;font-size:.9rem;text-align:left;touch-action:none;-webkit-touch-callout:none;transition:transform .12s,border-color .12s,background .12s;min-height:2.5rem}
+.chip i{width:.8rem;height:.8rem;border-radius:4px;flex:none;background:var(--c)}
+.chip:hover{border-color:var(--c)}
+.chip:active{transform:scale(.97)}
+.chip.wide{grid-column:span 2}
+.chip.hidden{display:none}
+.chip.ready{border-color:color-mix(in srgb,var(--c) 45%,var(--line))}
+.chip kbd{margin-left:auto;font:inherit;font-size:.68rem;color:var(--muted);opacity:.7}
+.ghost{position:fixed;z-index:50;pointer-events:none;transform:translate(-50%,-60%) rotate(-3deg);box-shadow:0 10px 30px rgba(0,0,0,.25);background:var(--card)}
+
+.feedback{flex:1;min-height:5.5rem;display:flex;flex-direction:column;gap:.35rem;overflow:hidden;border-left:5px solid var(--line);transition:background .25s,border-color .25s}
+.feedback .fb-title{font-weight:800;font-size:1rem;display:flex;align-items:center;gap:.4rem}
+.feedback .fb-body{font-size:.9rem;line-height:1.42;color:var(--ink)}
+.feedback .fb-body b{font-weight:750}
+.feedback.good{background:var(--good-soft);border-color:var(--good)} .feedback.good .fb-title{color:var(--good)}
+.feedback.near{background:var(--warn-soft);border-color:var(--warn)} .feedback.near .fb-title{color:var(--warn)}
+.feedback.bad{background:var(--bad-soft);border-color:var(--bad)} .feedback.bad .fb-title{color:var(--bad)}
+.feedback ul{margin:.1rem 0 0;padding-left:1.1rem;font-size:.85rem;line-height:1.4}
+.feedback.pop{animation:pop .3s}
+@keyframes pop{from{transform:scale(.98);opacity:.6}}
+
+.actions{display:flex;gap:.45rem}
+.btn{flex:1;padding:.65rem .5rem;border-radius:12px;font-weight:700;background:var(--card);box-shadow:var(--shadow);font-size:.92rem;display:flex;align-items:center;justify-content:center;gap:.35rem}
+.btn svg{width:1rem;height:1rem}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.glow{animation:glow 1.4s infinite}
+@keyframes glow{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 25%,transparent)}}
+.btn[disabled]{opacity:.4;cursor:default}
+
+/* overlays */
+.overlay{position:absolute;inset:0;display:grid;place-items:center;background:color-mix(in srgb,var(--card) 82%,transparent);backdrop-filter:blur(3px);z-index:5;padding:1rem}
+.overlay[hidden]{display:none}
+.ov-card{max-width:30rem;text-align:center}
+.ov-card h2{margin:.2rem 0 .4rem;font-size:1.7rem;letter-spacing:-.02em}
+.ov-card p{color:var(--muted);line-height:1.5;margin:.3rem 0 1rem}
+.ov-card .big{font-size:3rem;font-weight:850;letter-spacing:-.03em;line-height:1;margin:.4rem 0}
+.ov-card .row{display:flex;gap:.6rem;justify-content:center;margin:1rem 0}
+.ov-card .row .stat{min-width:6.5rem}
+.ov-card .btn{display:inline-flex;flex:none;padding:.75rem 1.6rem;font-size:1rem}
+.newbest{color:var(--good);font-weight:800}
+
+.modal{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:rgba(10,12,25,.45);padding:1rem}
+.modal[hidden]{display:none}
+.modal .sheet{width:min(54rem,100%);max-height:calc(100dvh - 2rem);overflow:auto;padding:1.2rem 1.4rem;position:relative}
+.modal h2{margin:0 0 .8rem;font-size:1.3rem}
+.modal h4{margin:1rem 0 .5rem;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.close{position:absolute;top:.8rem;right:.8rem}
+.mastery{display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:.4rem .9rem}
+.m-row{display:grid;grid-template-columns:7.5rem 1fr 3rem;align-items:center;gap:.5rem;font-size:.85rem}
+.m-row .track{height:.55rem;background:var(--card2);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.m-row .track i{display:block;height:100%;background:var(--c)}
+.m-row em{font-style:normal;color:var(--muted);font-size:.78rem;text-align:right}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(10.5rem,1fr));gap:.5rem}
+.badge{display:flex;gap:.55rem;align-items:center;padding:.5rem .6rem;border-radius:12px;background:var(--card2);border:1px solid var(--line);font-size:.8rem;line-height:1.25}
+.badge .medal{width:2rem;height:2rem;border-radius:50%;display:grid;place-items:center;font-size:1rem;flex:none;background:var(--accent-soft)}
+.badge.locked{opacity:.45;filter:grayscale(1)}
+.badge b{display:block;font-size:.85rem}
+.guide{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.5rem}
+.g-item{padding:.6rem .7rem;border-radius:12px;background:var(--card2);border-left:4px solid var(--c);font-size:.85rem;line-height:1.4}
+.g-item b{display:block;margin-bottom:.15rem}
+.g-item small{color:var(--muted)}
+.how{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.how div{background:var(--card2);border-radius:12px;padding:.7rem;font-size:.85rem;line-height:1.4}
+.how div b{display:block;font-size:1.4rem;color:var(--accent)}
+.smallbtn{font-size:.8rem;color:var(--muted);text-decoration:underline;margin-top:1rem}
+
+.toast{position:fixed;left:50%;top:4.2rem;transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:.6rem 1rem;border-radius:999px;font-weight:700;font-size:.9rem;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:toast 3.2s forwards;pointer-events:none;white-space:nowrap}
+@keyframes toast{0%{opacity:0;transform:translate(-50%,-10px)}8%,85%{opacity:1;transform:translate(-50%,0)}100%{opacity:0}}
+.float{position:fixed;z-index:55;pointer-events:none;font-weight:850;font-size:1.25rem;color:var(--good);animation:floatup 1s forwards;text-shadow:0 1px 0 var(--card)}
+@keyframes floatup{to{transform:translateY(-46px);opacity:0}}
+
+/* molecule svg */
+.bond{stroke:var(--bond);stroke-width:.075;stroke-linecap:round}
+.atom-label{font-weight:650;dominant-baseline:central;text-anchor:middle;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.sel-dot{fill:var(--sel);fill-opacity:.16;stroke:var(--sel);stroke-width:.05;stroke-opacity:.75}
+.sel-bond{stroke:var(--sel);stroke-opacity:.16;stroke-width:.5;stroke-linecap:round}
+.target{animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55}}
+.hintring{fill:none;stroke:var(--accent);stroke-width:.07;stroke-dasharray:.14 .1;animation:pulse .8s infinite}
+.tag text{font-weight:750;dominant-baseline:central;text-anchor:middle;fill:#fff;font-family:system-ui,-apple-system,sans-serif}
+:root[data-theme="dark"] .tag text{fill:#0f1220}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tag text{fill:#0f1220}}
+.halo-in{animation:haloin .45s ease-out}
+@keyframes haloin{from{opacity:0}}
+#lasso{fill:var(--accent);fill-opacity:.08;stroke:var(--accent);stroke-width:.05;stroke-dasharray:.15 .1}
+
+/* portrait tablets: stack */
+@media (max-aspect-ratio: 1/1){
+  main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}
+  .panel{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto 1fr;gap:.6rem}
+  #statusBox{grid-column:1;grid-row:1}
+  #bankBox{grid-column:2;grid-row:1 / span 3}
+  .feedback{grid-column:1;grid-row:2;min-height:6.5rem}
+  .actions{grid-column:1;grid-row:3;align-self:end}
+  .chips{grid-template-columns:1fr 1fr}
+  .tab span{display:none}
+}
+@media (max-width:640px){
+  .brand span,.tab span{display:none}
+  header{gap:.5rem;padding:.5rem}
+  main{padding:0 .5rem .5rem}
+  .panel{grid-template-columns:1fr}
+  #bankBox{grid-column:1;grid-row:auto}
+  .feedback,.actions,#statusBox{grid-column:1;grid-row:auto}
+  .chip kbd{display:none}
+}
+@media (max-height:640px) and (min-aspect-ratio: 1/1){
+  .lvl-desc{display:none}
+  .box{padding:.6rem .7rem}
+  .chip{min-height:2.15rem;padding:.35rem .55rem}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,3 27,9.5 27,22.5 16,29 5,22.5 5,9.5" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linejoin="round"/><line x1="9" y1="12" x2="9" y2="20" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="16" r="3.6" fill="var(--g-acid)"/></svg>
+    <span>Functional Group Finder</span>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Mode">
+    <button class="tab" role="tab" data-mode="practice" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span>Practice</span></button>
+    <button class="tab" role="tab" data-mode="challenge" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0Z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span>Challenge</span></button>
+    <button class="tab" role="tab" data-mode="quick" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7Z"/></svg><span>Quick Fire</span></button>
+    <button class="tab" role="tab" data-mode="study" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5a2 2 0 0 1 2-2h6v18H4a2 2 0 0 1-2-2Z"/><path d="M22 5a2 2 0 0 0-2-2h-6v18h6a2 2 0 0 0 2-2Z"/></svg><span>Study</span></button>
+  </nav>
+  <div class="tools">
+    <button class="iconbtn" id="helpBtn" title="How to play &amp; group guide" aria-label="Help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.5 9.3a2.6 2.6 0 0 1 5 .9c0 1.8-2.5 2.2-2.5 3.8"/><circle cx="12" cy="17.3" r=".6" fill="currentColor"/></svg></button>
+    <button class="iconbtn" id="progBtn" title="Your progress" aria-label="Progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 7 5-3 5 3-1.5-7"/></svg></button>
+    <button class="iconbtn" id="themeBtn" title="Light / dark" aria-label="Toggle theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></svg></button>
+  </div>
+</header>
+
+<main>
+  <section class="card stage" id="stage">
+    <svg id="mol" role="img" aria-label="Molecule"></svg>
+    <div class="stage-top">
+      <div class="pill" id="levelPill">Level 1</div>
+      <div class="pill" id="foundPill"><span id="foundText">Groups</span><span class="pips" id="pips"></span></div>
+    </div>
+    <div class="stage-hint" id="stageHint">Tap atoms (or drag across them) to select a group · drag on empty space to lasso · tap empty space to clear</div>
+    <div class="overlay" id="overlay" hidden><div class="ov-card" id="ovCard"></div></div>
+  </section>
+
+  <aside class="panel">
+    <div class="card box" id="statusBox"></div>
+    <div class="card box" id="bankBox">
+      <h3><span id="bankTitle">Name the group</span><span id="bankNote" style="text-transform:none;letter-spacing:0;font-weight:600"></span></h3>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="card box feedback" id="feedback" aria-live="polite"></div>
+    <div class="actions" id="actions"></div>
+  </aside>
+</main>
+
+<div class="modal" id="helpModal" hidden><div class="card sheet">
+  <button class="iconbtn close" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <h2>How to play</h2>
+  <div class="how">
+    <div><b>1</b>Tap the atoms that make up <em>one</em> functional group, or drag across them. Drag on empty space to draw a lasso.</div>
+    <div><b>2</b>Tap the group's name, or drag the name onto the molecule.</div>
+    <div><b>3</b>Find every group to finish the molecule. Streaks multiply your points.</div>
+  </div>
+  <h4>Which atoms to select</h4>
+  <div class="guide" id="guide"></div>
+  <p style="font-size:.85rem;color:var(--muted);line-height:1.5;margin:.8rem 0 0">Lines are carbon–carbon bonds; each corner or line end is a carbon. Hydrogens on carbon aren't drawn, except the H of an aldehyde. For alcohols, ethers, amines and amides, you may also include the carbon attached to the O or N, as long as that carbon isn't part of another group (such as a benzene ring).</p>
+</div></div>
+
+<div class="modal" id="progModal" hidden><div class="card sheet">
+  <button class="iconbtn close" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <h2>Your progress</h2>
+  <div id="progBody"></div>
+  <button class="smallbtn" id="resetBtn">Reset all progress</button>
+</div></div>
+
+<script>
+const MOLS = [{"id":"m1","lv":1,"a":[["C",-0.5,-0.0,3],["O",0.5,-0.0,1]],"b":[[0,1,1]]},{"id":"m2","lv":1,"a":[["C",0.866,0.167,3],["C",0.0,-0.333,2],["O",-0.866,0.166,1]],"b":[[0,1,1],[1,2,1]]},{"id":"m3","lv":1,"a":[["C",1.299,-0.249,3],["C",0.433,0.25,2],["C",-0.433,-0.25,2],["O",-1.299,0.249,1]],"b":[[0,1,1],[1,2,1],[2,3,1]]},{"id":"m4","lv":1,"a":[["C",0.864,0.503,3],["C",0.0,0.0,1],["C",-0.868,0.497,3],["O",0.004,-1.0,1]],"b":[[0,1,1],[1,2,1],[1,3,1]]},{"id":"m5","lv":1,"a":[["C",-1.732,0.199,3],["C",-0.866,-0.301,2],["C",-0.0,0.2,2],["C",0.866,-0.299,2],["O",1.732,0.201,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1]]},{"id":"m6","lv":1,"a":[["C",-0.498,-0.721,3],["C",-0.0,0.146,0],["C",0.864,0.649,3],["C",-0.868,0.644,3],["O",0.502,-0.718,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[1,4,1]]},{"id":"m7","lv":1,"a":[["C",1.201,-0.69,3],["C",0.201,-0.692,2],["C",-0.3,0.173,1],["C",-1.3,0.171,3],["O",0.198,1.04,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[2,4,1]]},{"id":"m8","lv":1,"a":[["C",-0.867,0.163,3],["O",0.001,-0.333,0],["C",0.865,0.17,3]],"b":[[0,1,1],[1,2,1]]},{"id":"m9","lv":1,"a":[["C",1.299,0.249,3],["C",0.433,-0.25,2],["O",-0.433,0.25,0],["C",-1.299,-0.249,3]],"b":[[0,1,1],[1,2,1],[2,3,1]]},{"id":"m10","lv":1,"a":[["C",-1.732,0.199,3],["C",-0.866,-0.301,2],["O",-0.0,0.2,0],["C",0.866,-0.299,2],["C",1.732,0.201,3]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1]]},{"id":"m11","lv":1,"a":[["C",1.213,0.499,3],["C",0.346,-0.0,1],["C",0.346,-1.0,3],["O",-0.519,0.5,0],["C",-1.386,0.001,3]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1]]},{"id":"m12","lv":1,"a":[["C",1.732,0.201,3],["C",0.866,-0.299,2],["C",-0.0,0.2,2],["O",-0.866,-0.301,0],["C",-1.732,0.199,3]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1]]},{"id":"m13","lv":1,"a":[["C",-0.5,-0.0,3],["N",0.5,-0.0,2]],"b":[[0,1,1]]},{"id":"m14","lv":1,"a":[["C",0.866,0.167,3],["C",0.0,-0.333,2],["N",-0.866,0.166,2]],"b":[[0,1,1],[1,2,1]]},{"id":"m15","lv":1,"a":[["C",1.299,-0.249,3],["C",0.433,0.25,2],["C",-0.433,-0.25,2],["N",-1.299,0.249,2]],"b":[[0,1,1],[1,2,1],[2,3,1]]},{"id":"m16","lv":1,"a":[["C",-0.867,0.163,3],["N",0.001,-0.333,1],["C",0.865,0.17,3]],"b":[[0,1,1],[1,2,1]]},{"id":"m17","lv":1,"a":[["C",0.001,-1.0,3],["N",-0.0,-0.0,0],["C",0.866,0.501,3],["C",-0.866,0.499,3]],"b":[[0,1,1],[1,2,1],[1,3,1]]},{"id":"m18","lv":1,"a":[["C",-1.732,0.199,3],["C",-0.866,-0.301,2],["N",-0.0,0.2,1],["C",0.866,-0.299,2],["C",1.732,0.201,3]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1]]},{"id":"m19","lv":1,"a":[["C",0.002,1.0,3],["C",-0.0,0.0,0],["O",0.865,-0.502,0],["H",-0.867,-0.498,0]],"b":[[0,1,1],[1,2,2],[1,3,1]]},{"id":"m20","lv":1,"a":[["C",-1.201,-0.69,3],["C",-0.201,-0.692,2],["C",0.3,0.173,0],["O",-0.198,1.04,0],["H",1.3,0.171,0]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1]]},{"id":"m21","lv":1,"a":[["C",-1.875,0.42,3],["C",-1.01,-0.081,2],["C",-0.143,0.417,2],["C",0.721,-0.085,0],["O",0.719,-1.085,0],["H",1.588,0.413,0]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1]]},{"id":"m22","lv":1,"a":[["C",0.43,-1.251,3],["C",0.433,-0.251,1],["C",1.3,0.247,3],["C",-0.433,0.251,0],["O",-1.3,-0.247,0],["H",-0.43,1.251,0]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,2],[3,5,1]]},{"id":"m23","lv":1,"a":[["C",0.864,0.503,3],["C",0.0,0.0,0],["C",-0.868,0.497,3],["O",0.004,-1.0,0]],"b":[[0,1,1],[1,2,1],[1,3,2]]},{"id":"m24","lv":1,"a":[["C",-1.201,-0.69,3],["C",-0.201,-0.692,2],["C",0.3,0.173,0],["C",1.3,0.171,3],["O",-0.198,1.04,0]],"b":[[0,1,1],[1,2,1],[2,3,1],[2,4,2]]},{"id":"m25","lv":1,"a":[["C",1.732,0.001,3],["C",0.866,0.501,2],["C",0.0,0.0,0],["O",0.001,-1.0,0],["C",-0.866,0.499,2],["C",-1.732,-0.001,3]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,1]]},{"id":"m26","lv":1,"a":[["C",-0.868,0.497,3],["C",0.0,0.0,0],["O",0.004,-1.0,0],["O",0.864,0.503,1]],"b":[[0,1,1],[1,2,2],[1,3,1]]},{"id":"m27","lv":1,"a":[["C",-1.201,-0.69,3],["C",-0.201,-0.692,2],["C",0.3,0.173,0],["O",-0.198,1.04,0],["O",1.3,0.171,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1]]},{"id":"m28","lv":1,"a":[["C",-1.875,0.42,3],["C",-1.01,-0.081,2],["C",-0.143,0.417,2],["C",0.721,-0.085,0],["O",0.719,-1.085,0],["O",1.588,0.413,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1]]},{"id":"m29","lv":1,"a":[["C",-0.868,0.497,3],["C",0.0,0.0,0],["N",0.864,0.503,2],["O",0.004,-1.0,0]],"b":[[0,1,1],[1,2,1],[1,3,2]]},{"id":"m30","lv":1,"a":[["C",-1.201,-0.69,3],["C",-0.201,-0.692,2],["C",0.3,0.173,0],["N",1.3,0.171,2],["O",-0.198,1.04,0]],"b":[[0,1,1],[1,2,1],[2,3,1],[2,4,2]]},{"id":"m31","lv":1,"a":[["C",1.213,0.498,3],["C",0.346,-0.001,0],["O",0.344,-1.001,0],["N",-0.519,0.501,1],["C",-1.386,0.003,3]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1]]},{"id":"m32","lv":1,"a":[["C",-0.997,0.87,3],["C",-0.5,0.002,0],["O",-1.003,-0.862,0],["N",0.5,-0.002,0],["C",0.997,-0.87,3],["C",1.003,0.862,3]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[3,5,1]]},{"id":"m33","lv":1,"a":[["C",0.499,0.866,1],["C",-0.501,0.866,1],["C",-1.0,-0.001,1],["C",-0.499,-0.866,1],["C",0.501,-0.866,1],["C",1.0,0.001,1]],"b":[[0,1,1],[1,2,2,0.0,0.0],[2,3,1],[3,4,2,0.0,0.0],[4,5,1],[5,0,2,0.0,0.0]]},{"id":"m34","lv":1,"a":[["C",-1.485,0.856,3],["C",-0.619,0.357,0],["C",-0.618,-0.643,1],["C",0.248,-1.143,1],["C",1.114,-0.642,1],["C",1.113,0.358,1],["C",0.247,0.857,1]],"b":[[0,1,1],[1,2,2,0.248,-0.143],[2,3,1],[3,4,2,0.248,-0.143],[4,5,1],[5,6,2,0.248,-0.143],[6,1,1]]},{"id":"m35","lv":1,"a":[["C",-2.056,0.32,3],["C",-1.188,0.817,2],["C",-0.324,0.314,0],["C",0.544,0.811,1],["C",1.408,0.307,1],["C",1.405,-0.693,1],["C",0.537,-1.189,1],["C",-0.327,-0.686,1]],"b":[[0,1,1],[1,2,1],[2,3,2,0.54,-0.189],[3,4,1],[4,5,2,0.54,-0.189],[5,6,1],[6,7,2,0.54,-0.189],[7,2,1]]},{"id":"m36","lv":1,"a":[["C",0.43,-1.251,3],["C",0.433,-0.251,1],["C",1.3,0.247,3],["C",-0.433,0.251,0],["C",-0.43,1.251,3],["O",-1.3,-0.247,0]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[3,5,2]]},{"id":"m37","lv":2,"a":[["O",-1.485,0.856,1],["C",-0.619,0.357,1],["C",-0.618,-0.643,2],["C",0.248,-1.143,2],["C",1.114,-0.642,2],["C",1.113,0.358,2],["C",0.247,0.857,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,1,1]]},{"id":"m38","lv":2,"a":[["O",-1.337,0.77,1],["C",-0.47,0.271,1],["C",0.443,0.678,2],["C",1.113,-0.064,2],["C",0.614,-0.931,2],["C",-0.364,-0.724,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,1,1]]},{"id":"m39","lv":2,"a":[["C",-2.598,0.212,3],["C",-1.732,-0.287,2],["C",-0.866,0.214,2],["C",0.0,-0.286,2],["C",0.866,0.215,2],["C",1.732,-0.284,2],["O",2.598,0.216,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1]]},{"id":"m40","lv":2,"a":[["C",-0.093,-0.845,2],["C",-0.833,-0.172,2],["C",-0.421,0.739,2],["O",0.573,0.629,0],["C",0.775,-0.35,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,0,1]]},{"id":"m41","lv":2,"a":[["C",-0.499,-0.866,2],["C",-1.0,-0.001,2],["C",-0.501,0.866,2],["O",0.499,0.866,0],["C",1.0,0.001,2],["C",0.501,-0.866,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,0,1]]},{"id":"m42","lv":2,"a":[["C",-1.0,-0.001,2],["C",-0.501,0.866,2],["O",0.499,0.866,0],["C",1.0,0.001,2],["C",0.501,-0.866,2],["O",-0.499,-0.866,0]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,0,1]]},{"id":"m43","lv":2,"a":[["C",-3.464,0.219,3],["C",-2.598,-0.28,2],["C",-1.732,0.221,2],["C",-0.866,-0.278,2],["O",-0.0,0.222,0],["C",0.866,-0.277,2],["C",1.732,0.224,2],["C",2.598,-0.276,2],["C",3.464,0.225,3]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1],[7,8,1]]},{"id":"m44","lv":2,"a":[["C",-0.212,-0.744,3],["C",0.289,0.122,0],["C",0.788,-0.745,3],["C",1.155,0.621,3],["O",-0.577,0.623,0],["C",-1.443,0.123,3]],"b":[[0,1,1],[1,2,1],[1,3,1],[1,4,1],[4,5,1]]},{"id":"m45","lv":2,"a":[["C",2.165,-0.248,3],["O",1.299,0.251,0],["C",0.433,-0.25,2],["C",-0.433,0.25,2],["O",-1.299,-0.251,0],["C",-2.165,0.248,3]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1]]},{"id":"m46","lv":2,"a":[["N",-1.485,0.856,2],["C",-0.619,0.357,1],["C",-0.618,-0.643,2],["C",0.248,-1.143,2],["C",1.114,-0.642,2],["C",1.113,0.358,2],["C",0.247,0.857,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,1,1]]},{"id":"m47","lv":2,"a":[["C",-0.499,-0.866,2],["C",-1.0,-0.001,2],["C",-0.501,0.866,2],["N",0.499,0.866,1],["C",1.0,0.001,2],["C",0.501,-0.866,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,0,1]]},{"id":"m48","lv":2,"a":[["C",-0.093,-0.845,2],["C",-0.833,-0.172,2],["C",-0.421,0.739,2],["N",0.573,0.629,1],["C",0.775,-0.35,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,0,1]]},{"id":"m49","lv":2,"a":[["C",-1.485,0.856,3],["N",-0.619,0.357,0],["C",-0.618,-0.643,2],["C",0.248,-1.143,2],["C",1.114,-0.642,2],["C",1.113,0.358,2],["C",0.247,0.857,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,1,1]]},{"id":"m50","lv":2,"a":[["C",-1.733,0.57,3],["C",-0.866,0.071,1],["C",-0.865,-0.929,3],["N",-0.0,0.571,1],["C",0.866,0.072,1],["C",1.732,0.573,3],["C",0.867,-0.928,3]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[4,5,1],[4,6,1]]},{"id":"m51","lv":2,"a":[["C",-1.502,-1.111,3],["C",-0.502,-1.113,2],["N",-0.0,-0.247,0],["C",-0.499,0.62,2],["C",0.003,1.485,3],["C",1.0,-0.249,2],["C",1.501,0.616,3]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[2,5,1],[5,6,1]]},{"id":"m52","lv":2,"a":[["N",1.299,-0.249,2],["C",0.433,0.25,2],["C",-0.433,-0.25,2],["N",-1.299,0.249,2]],"b":[[0,1,1],[1,2,1],[2,3,1]]},{"id":"m53","lv":2,"a":[["N",3.031,-0.248,2],["C",2.165,0.252,2],["C",1.299,-0.249,2],["C",0.433,0.25,2],["C",-0.433,-0.25,2],["C",-1.299,0.249,2],["C",-2.165,-0.252,2],["N",-3.031,0.248,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1]]},{"id":"m54","lv":2,"a":[["O",-1.485,-0.856,0],["C",-0.619,-0.357,0],["C",-0.618,0.643,2],["C",0.248,1.143,2],["C",1.114,0.642,2],["C",1.113,-0.358,2],["C",0.247,-0.857,2]],"b":[[0,1,2],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,1,1]]},{"id":"m55","lv":2,"a":[["O",-1.337,-0.77,0],["C",-0.47,-0.271,0],["C",0.443,-0.678,2],["C",1.113,0.064,2],["C",0.614,0.931,2],["C",-0.364,0.724,2]],"b":[[0,1,2],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,1,1]]},{"id":"m56","lv":2,"a":[["C",-1.733,0.57,3],["C",-0.866,0.071,1],["C",-0.865,-0.929,3],["C",-0.0,0.571,2],["C",0.866,0.072,0],["C",1.732,0.573,3],["O",0.867,-0.928,0]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[4,5,1],[4,6,2]]},{"id":"m57","lv":2,"a":[["C",1.124,1.516,3],["C",0.625,0.65,1],["C",1.125,-0.216,2],["C",0.626,-1.082,2],["C",-0.374,-1.083,2],["C",-0.875,-0.217,0],["O",-1.875,-0.218,0],["C",-0.375,0.649,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,2],[5,7,1],[7,1,1]]},{"id":"m58","lv":2,"a":[["C",-1.733,0.568,3],["C",-0.866,0.07,0],["O",-0.864,-0.93,0],["C",-0.001,0.571,2],["C",0.866,0.073,0],["C",1.731,0.575,3],["O",0.868,-0.927,0]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[4,6,2]]},{"id":"m59","lv":2,"a":[["O",-1.72,0.869,0],["C",-1.222,0.002,0],["C",-0.222,0.0,1],["C",0.276,-0.867,2],["C",1.276,-0.869,2],["C",1.778,-0.004,2],["C",1.279,0.863,2],["C",0.279,0.865,2],["H",-1.724,-0.863,0]],"b":[[0,1,2],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1],[7,2,1],[1,8,1]]},{"id":"m60","lv":2,"a":[["C",-0.131,0.975,3],["C",0.371,0.11,0],["C",0.869,0.977,3],["C",1.238,-0.388,3],["C",-0.494,-0.391,0],["O",-0.492,-1.391,0],["H",-1.361,0.107,0]],"b":[[0,1,1],[1,2,1],[1,3,1],[1,4,1],[4,5,2],[4,6,1]]},{"id":"m61","lv":2,"a":[["O",1.297,-1.253,0],["C",1.299,-0.253,0],["C",0.434,0.249,2],["C",-0.434,-0.249,2],["C",-1.299,0.253,0],["O",-1.297,1.253,0],["H",2.166,0.246,0],["H",-2.166,-0.246,0]],"b":[[0,1,2],[1,2,1],[2,3,1],[3,4,1],[4,5,2],[1,6,1],[4,7,1]]},{"id":"m62","lv":2,"a":[["O",-1.72,0.869,1],["C",-1.222,0.002,0],["O",-1.724,-0.863,0],["C",-0.222,0.0,1],["C",0.276,-0.867,2],["C",1.276,-0.869,2],["C",1.778,-0.004,2],["C",1.279,0.863,2],["C",0.279,0.865,2]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1],[7,8,1],[8,3,1]]},{"id":"m63","lv":2,"a":[["C",-1.733,0.57,3],["C",-0.866,0.071,1],["C",-0.865,-0.929,3],["C",-0.0,0.571,2],["C",0.866,0.072,0],["O",0.867,-0.928,0],["O",1.732,0.573,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[4,5,2],[4,6,1]]},{"id":"m64","lv":2,"a":[["O",-1.733,0.57,1],["C",-0.866,0.071,0],["O",-0.865,-0.929,0],["C",-0.0,0.571,2],["C",0.866,0.072,0],["O",0.867,-0.928,0],["O",1.732,0.573,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,2],[4,6,1]]},{"id":"m65","lv":2,"a":[["O",2.165,-0.248,1],["C",1.299,0.251,0],["O",1.298,1.251,0],["C",0.433,-0.25,2],["C",-0.433,0.25,2],["C",-1.299,-0.251,0],["O",-1.298,-1.251,0],["O",-2.165,0.248,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,2],[5,7,1]]},{"id":"m66","lv":2,"a":[["O",-1.485,-0.856,0],["C",-0.619,-0.357,0],["C",0.247,-0.857,2],["C",1.113,-0.358,2],["C",1.114,0.642,2],["C",0.248,1.143,2],["N",-0.618,0.643,1]],"b":[[0,1,2],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,1,1]]},{"id":"m67","lv":2,"a":[["O",-1.337,-0.77,0],["C",-0.47,-0.271,0],["C",-0.364,0.724,2],["C",0.614,0.931,2],["C",1.113,0.064,2],["N",0.443,-0.678,1]],"b":[[0,1,2],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,1,1]]},{"id":"m68","lv":2,"a":[["C",0.43,-1.251,3],["C",0.433,-0.251,1],["C",1.3,0.247,3],["C",-0.433,0.251,0],["N",-0.43,1.251,2],["O",-1.3,-0.247,0]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[3,5,2]]},{"id":"m69","lv":2,"a":[["C",-2.887,-0.224,3],["C",-2.021,0.276,2],["C",-1.155,-0.223,2],["C",-0.289,0.278,2],["C",0.578,-0.222,0],["O",0.578,-1.222,0],["N",1.443,0.279,0],["C",2.31,-0.22,3],["C",1.442,1.279,3]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,2],[4,6,1],[6,7,1],[6,8,1]]},{"id":"m70","lv":2,"a":[["C",1.72,0.869,3],["C",1.222,0.002,1],["C",1.724,-0.863,3],["C",0.222,0.0,0],["C",-0.276,-0.867,1],["C",-1.276,-0.869,1],["C",-1.778,-0.004,1],["C",-1.279,0.863,1],["C",-0.279,0.865,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,2,-0.778,-0.002],[4,5,1],[5,6,2,-0.778,-0.002],[6,7,1],[7,8,2,-0.778,-0.002],[8,3,1]]},{"id":"m71","lv":2,"a":[["C",-1.733,0.999,3],["C",-0.866,0.499,0],["C",-0.866,-0.501,1],["C",0.001,-1.0,1],["C",0.866,-0.499,0],["C",1.733,-0.999,3],["C",0.866,0.501,1],["C",-0.001,1.0,1]],"b":[[0,1,1],[1,2,1],[2,3,2,0.0,0.0],[3,4,1],[4,5,1],[4,6,2,0.0,0.0],[6,7,1],[7,1,2,0.0,0.0]]},{"id":"m72","lv":2,"a":[["C",-2.537,-0.804,1],["C",-2.035,-1.669,1],["C",-1.035,-1.667,1],["C",-0.537,-0.8,0],["C",-1.039,0.065,1],["C",-2.039,0.063,1],["C",0.463,-0.798,2],["C",0.961,0.069,0],["C",0.46,0.934,1],["C",0.958,1.801,1],["C",1.958,1.803,1],["C",2.46,0.938,1],["C",1.961,0.071,1]],"b":[[0,1,2,-1.537,-0.802],[1,2,1],[2,3,2,-1.537,-0.802],[3,4,1],[4,5,2,-1.537,-0.802],[3,6,1],[6,7,1],[7,8,2,1.46,0.936],[8,9,1],[9,10,2,1.46,0.936],[10,11,1],[11,12,2,1.46,0.936],[5,0,1],[12,7,1]]},{"id":"m73","lv":2,"a":[["O",1.299,-0.249,1],["C",0.433,0.25,2],["C",-0.433,-0.25,2],["O",-1.299,0.249,1]],"b":[[0,1,1],[1,2,1],[2,3,1]]},{"id":"m74","lv":2,"a":[["O",1.732,0.001,1],["C",0.866,0.501,2],["C",0.0,0.0,1],["O",0.001,-1.0,1],["C",-0.866,0.499,2],["O",-1.732,-0.001,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[2,4,1],[4,5,1]]},{"id":"m75","lv":2,"a":[["C",-1.84,0.655,3],["C",-0.974,0.155,1],["O",-0.975,-0.845,1],["C",-0.108,0.654,2],["C",0.758,0.153,0],["C",1.257,-0.713,3],["C",1.624,0.653,3],["O",0.257,-0.712,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[4,5,1],[4,6,1],[4,7,1]]},{"id":"m76","lv":2,"a":[["O",-1.733,0.999,1],["C",-0.866,0.499,1],["C",-0.866,-0.501,2],["C",0.001,-1.0,2],["C",0.866,-0.499,1],["O",1.733,-0.999,1],["C",0.866,0.501,2],["C",-0.001,1.0,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[4,6,1],[6,7,1],[7,1,1]]},{"id":"m77","lv":3,"a":[["N",1.299,-0.249,2],["C",0.433,0.25,2],["C",-0.433,-0.25,2],["O",-1.299,0.249,1]],"b":[[0,1,1],[1,2,1],[2,3,1]]},{"id":"m78","lv":3,"a":[["C",1.3,-0.247,3],["C",0.433,0.251,1],["O",0.43,1.251,1],["C",-0.433,-0.251,0],["O",-0.43,-1.251,0],["O",-1.3,0.247,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,2],[3,5,1]]},{"id":"m79","lv":3,"a":[["O",-1.201,-0.69,1],["C",-0.201,-0.692,2],["C",0.3,0.173,0],["O",-0.198,1.04,0],["O",1.3,0.171,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1]]},{"id":"m80","lv":3,"a":[["N",-1.386,0.001,2],["C",-0.519,0.5,2],["C",0.346,-0.0,0],["O",0.346,-1.0,0],["O",1.213,0.499,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1]]},{"id":"m81","lv":3,"a":[["C",-0.432,-1.25,3],["C",-0.433,-0.25,1],["N",-1.299,0.249,2],["C",0.433,0.25,0],["O",1.299,-0.249,0],["O",0.432,1.25,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,2],[3,5,1]]},{"id":"m82","lv":3,"a":[["N",-1.875,0.42,2],["C",-1.01,-0.081,2],["C",-0.143,0.417,2],["C",0.721,-0.085,0],["O",0.719,-1.085,0],["O",1.588,0.413,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1]]},{"id":"m83","lv":3,"a":[["C",1.213,0.498,3],["C",0.346,-0.001,0],["O",0.344,-1.001,0],["C",-0.519,0.501,2],["O",-1.386,0.003,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1]]},{"id":"m84","lv":3,"a":[["C",1.588,0.413,3],["C",0.721,-0.085,0],["O",0.719,-1.085,0],["C",-0.143,0.417,2],["C",-1.01,-0.081,2],["O",-1.875,0.42,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1]]},{"id":"m85","lv":3,"a":[["O",-1.72,0.869,0],["C",-1.222,0.002,0],["C",-0.222,0.0,0],["C",0.276,-0.867,1],["C",1.276,-0.869,1],["C",1.778,-0.004,1],["C",1.279,0.863,1],["C",0.279,0.865,1],["H",-1.724,-0.863,0]],"b":[[0,1,2],[1,2,1],[2,3,2,0.778,-0.002],[3,4,1],[4,5,2,0.778,-0.002],[5,6,1],[6,7,2,0.778,-0.002],[7,2,1],[1,8,1]]},{"id":"m86","lv":3,"a":[["C",-1.925,-0.11,3],["C",-1.059,-0.61,0],["O",-1.06,-1.61,0],["C",-0.193,-0.111,0],["C",-0.192,0.889,1],["C",0.675,1.388,1],["C",1.54,0.888,1],["C",1.539,-0.112,1],["C",0.673,-0.612,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,2,0.674,0.388],[4,5,1],[5,6,2,0.674,0.388],[6,7,1],[7,8,2,0.674,0.388],[8,3,1]]},{"id":"m87","lv":3,"a":[["O",-1.72,0.869,1],["C",-1.222,0.002,0],["O",-1.724,-0.863,0],["C",-0.222,0.0,0],["C",0.276,-0.867,1],["C",1.276,-0.869,1],["C",1.778,-0.004,1],["C",1.279,0.863,1],["C",0.279,0.865,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,2,0.778,-0.002],[4,5,1],[5,6,2,0.778,-0.002],[6,7,1],[7,8,2,0.778,-0.002],[8,3,1]]},{"id":"m88","lv":3,"a":[["N",-1.925,-0.11,2],["C",-1.059,-0.61,0],["O",-1.06,-1.61,0],["C",-0.193,-0.111,0],["C",-0.192,0.889,1],["C",0.675,1.388,1],["C",1.54,0.888,1],["C",1.539,-0.112,1],["C",0.673,-0.612,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,2,0.674,0.388],[4,5,1],[5,6,2,0.674,0.388],[6,7,1],[7,8,2,0.674,0.388],[8,3,1]]},{"id":"m89","lv":3,"a":[["O",-1.485,0.856,1],["C",-0.619,0.357,0],["C",-0.618,-0.643,1],["C",0.248,-1.143,1],["C",1.114,-0.642,1],["C",1.113,0.358,1],["C",0.247,0.857,1]],"b":[[0,1,1],[1,2,2,0.248,-0.143],[2,3,1],[3,4,2,0.248,-0.143],[4,5,1],[5,6,2,0.248,-0.143],[6,1,1]]},{"id":"m90","lv":3,"a":[["C",-2.056,0.32,3],["O",-1.188,0.817,0],["C",-0.324,0.314,0],["C",0.544,0.811,1],["C",1.408,0.307,1],["C",1.405,-0.693,1],["C",0.537,-1.189,1],["C",-0.327,-0.686,1]],"b":[[0,1,1],[1,2,1],[2,3,2,0.54,-0.189],[3,4,1],[4,5,2,0.54,-0.189],[5,6,1],[6,7,2,0.54,-0.189],[7,2,1]]},{"id":"m91","lv":3,"a":[["N",-1.485,0.856,2],["C",-0.619,0.357,0],["C",-0.618,-0.643,1],["C",0.248,-1.143,1],["C",1.114,-0.642,1],["C",1.113,0.358,1],["C",0.247,0.857,1]],"b":[[0,1,1],[1,2,2,0.248,-0.143],[2,3,1],[3,4,2,0.248,-0.143],[4,5,1],[5,6,2,0.248,-0.143],[6,1,1]]},{"id":"m92","lv":3,"a":[["O",-1.936,-0.762,1],["C",-1.438,0.105,2],["C",-0.438,0.107,0],["C",0.061,0.974,1],["C",1.061,0.976,1],["C",1.562,0.111,1],["C",1.064,-0.756,1],["C",0.064,-0.758,1]],"b":[[0,1,1],[1,2,1],[2,3,2,0.562,0.109],[3,4,1],[4,5,2,0.562,0.109],[5,6,1],[6,7,2,0.562,0.109],[7,2,1]]},{"id":"m93","lv":3,"a":[["N",-1.936,-0.762,2],["C",-1.438,0.105,2],["C",-0.438,0.107,0],["C",0.061,0.974,1],["C",1.061,0.976,1],["C",1.562,0.111,1],["C",1.064,-0.756,1],["C",0.064,-0.758,1]],"b":[[0,1,1],[1,2,1],[2,3,2,0.562,0.109],[3,4,1],[4,5,2,0.562,0.109],[5,6,1],[6,7,2,0.562,0.109],[7,2,1]]},{"id":"m94","lv":3,"a":[["C",-2.422,0.809,3],["C",-1.558,0.306,0],["O",-1.561,-0.694,0],["N",-0.69,0.802,1],["C",0.174,0.299,0],["C",1.042,0.796,1],["C",1.906,0.293,1],["C",1.903,-0.707,1],["C",1.035,-1.204,1],["C",0.171,-0.701,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,2,1.038,-0.204],[5,6,1],[6,7,2,1.038,-0.204],[7,8,1],[8,9,2,1.038,-0.204],[9,4,1]]},{"id":"m95","lv":3,"a":[["O",-2.422,0.809,1],["C",-1.558,0.306,0],["O",-1.561,-0.694,0],["C",-0.69,0.802,2],["C",0.174,0.299,0],["C",1.042,0.796,1],["C",1.906,0.293,1],["C",1.903,-0.707,1],["C",1.035,-1.204,1],["C",0.171,-0.701,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,2,1.038,-0.204],[5,6,1],[6,7,2,1.038,-0.204],[7,8,1],[8,9,2,1.038,-0.204],[9,4,1]]},{"id":"m96","lv":3,"a":[["C",-1.733,0.568,3],["C",-0.866,0.07,0],["O",-0.864,-0.93,0],["C",-0.001,0.571,2],["C",0.866,0.073,0],["O",0.868,-0.927,0],["O",1.731,0.575,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,2],[4,6,1]]},{"id":"m97","lv":3,"a":[["C",1.3,0.247,3],["C",0.433,-0.251,0],["O",0.43,-1.251,0],["C",-0.433,0.251,0],["O",-0.43,1.251,0],["O",-1.3,-0.247,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,2],[3,5,1]]},{"id":"m98","lv":3,"a":[["O",0.344,-1.001,0],["C",0.346,-0.001,0],["C",-0.519,0.501,2],["O",-1.386,0.003,1],["H",1.213,0.498,0]],"b":[[0,1,2],[1,2,1],[2,3,1],[1,4,1]]},{"id":"m99","lv":3,"a":[["C",1.3,-0.247,3],["C",0.433,0.251,1],["O",0.43,1.251,1],["C",-0.433,-0.251,0],["O",-0.43,-1.251,0],["H",-1.3,0.247,0]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,2],[3,5,1]]},{"id":"m100","lv":3,"a":[["C",-1.732,0.199,3],["O",-0.866,-0.301,0],["C",-0.0,0.2,2],["C",0.866,-0.299,2],["O",1.732,0.201,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1]]},{"id":"m101","lv":3,"a":[["C",-1.732,0.199,3],["O",-0.866,-0.301,0],["C",-0.0,0.2,2],["C",0.866,-0.299,2],["N",1.732,0.201,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1]]},{"id":"m102","lv":3,"a":[["C",1.98,0.425,3],["C",1.113,-0.074,0],["O",1.111,-1.074,0],["N",0.248,0.428,1],["C",-0.619,-0.07,2],["C",-1.484,0.432,2],["O",-2.351,-0.067,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,1]]},{"id":"m103","lv":3,"a":[["N",-1.875,0.42,2],["C",-1.01,-0.081,2],["C",-0.143,0.417,2],["C",0.721,-0.085,0],["N",1.588,0.413,2],["O",0.719,-1.085,0]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[3,5,2]]},{"id":"m104","lv":3,"a":[["C",2.165,-0.248,3],["N",1.299,0.251,0],["C",1.298,1.251,3],["C",0.433,-0.25,2],["C",-0.433,0.25,2],["C",-1.299,-0.251,0],["O",-1.298,-1.251,0],["O",-2.165,0.248,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[4,5,1],[5,6,2],[5,7,1]]},{"id":"m105","lv":3,"a":[["C",2.166,0.246,3],["C",1.299,-0.253,0],["O",1.297,-1.253,0],["C",0.434,0.249,2],["C",-0.434,-0.249,2],["C",-1.299,0.253,0],["O",-1.297,1.253,0],["O",-2.166,-0.246,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,2],[5,7,1]]},{"id":"m106","lv":3,"a":[["O",-1.733,-0.999,0],["C",-0.866,-0.499,0],["C",-0.866,0.501,2],["C",0.001,1.0,2],["C",0.866,0.499,1],["O",1.733,0.999,1],["C",0.866,-0.501,2],["C",-0.001,-1.0,2]],"b":[[0,1,2],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[4,6,1],[6,7,1],[7,1,1]]},{"id":"m107","lv":3,"a":[["N",-1.733,0.999,2],["C",-0.866,0.499,1],["C",-0.866,-0.501,2],["C",0.001,-1.0,2],["C",0.866,-0.499,0],["O",1.733,-0.999,0],["C",0.866,0.501,2],["C",-0.001,1.0,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,2],[4,6,1],[6,7,1],[7,1,1]]},{"id":"m108","lv":3,"a":[["C",2.221,-0.774,3],["O",1.722,0.093,0],["C",0.722,0.095,1],["C",0.224,0.962,2],["C",-0.776,0.964,2],["C",-1.278,0.099,0],["O",-2.278,0.101,0],["C",-0.779,-0.768,2],["C",0.221,-0.77,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,2],[5,7,1],[7,8,1],[8,2,1]]},{"id":"m109","lv":3,"a":[["O",-1.887,0.23,1],["C",-1.022,0.731,2],["C",-0.155,0.232,1],["C",-0.05,-0.762,2],["C",0.929,-0.969,2],["C",1.428,-0.102,2],["O",0.758,0.64,0]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,2,1]]},{"id":"m110","lv":3,"a":[["O",1.758,0.074,1],["C",0.919,-0.469,0],["O",0.97,-1.468,0],["C",0.028,-0.014,1],["C",-0.127,0.973,2],["C",-1.115,1.131,2],["C",-1.57,0.241,2],["N",-0.863,-0.467,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1],[7,3,1]]},{"id":"m111","lv":3,"a":[["O",-1.485,0.856,1],["C",-0.619,0.357,1],["C",-0.618,-0.643,2],["C",0.248,-1.143,2],["N",1.114,-0.642,1],["C",1.113,0.358,2],["C",0.247,0.857,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,1,1]]},{"id":"m112","lv":3,"a":[["C",-2.351,-0.067,3],["C",-1.484,0.432,2],["O",-0.619,-0.07,0],["C",0.248,0.428,2],["C",1.113,-0.074,0],["O",1.111,-1.074,0],["O",1.98,0.425,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,2],[4,6,1]]},{"id":"m113","lv":3,"a":[["C",-2.351,-0.067,3],["O",-1.484,0.432,0],["C",-0.619,-0.07,2],["C",0.248,0.428,2],["C",1.113,-0.074,0],["C",1.98,0.425,3],["O",1.111,-1.074,0]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[4,6,2]]},{"id":"m114","lv":3,"a":[["C",1.093,-1.737,3],["C",1.596,-0.872,0],["C",2.093,-1.74,3],["C",2.464,-0.376,3],["C",0.731,-0.369,0],["C",-0.136,-0.866,1],["C",-1.001,-0.363,1],["C",-0.997,0.637,0],["C",-1.861,1.14,0],["O",-2.729,0.643,0],["C",-0.129,1.134,1],["C",0.735,0.631,1],["H",-1.858,2.14,0]],"b":[[0,1,1],[1,2,1],[1,3,1],[1,4,1],[4,5,1],[5,6,2,-0.133,0.134],[6,7,1],[7,8,1],[8,9,2],[7,10,2,-0.133,0.134],[10,11,1],[11,4,2,-0.133,0.134],[8,12,1]]},{"id":"m115","lv":3,"a":[["C",-1.733,0.999,3],["C",-0.866,0.499,0],["C",-0.866,-0.501,1],["C",0.001,-1.0,1],["C",0.866,-0.499,0],["N",1.733,-0.999,2],["C",0.866,0.501,1],["C",-0.001,1.0,1]],"b":[[0,1,1],[1,2,1],[2,3,2,0.0,0.0],[3,4,1],[4,5,1],[4,6,2,0.0,0.0],[6,7,1],[7,1,2,0.0,0.0]]},{"id":"m116","lv":3,"a":[["O",-2.595,0.731,1],["C",-1.731,0.228,2],["C",-0.863,0.725,2],["C",0.001,0.222,0],["C",0.869,0.719,1],["C",1.733,0.216,1],["C",1.729,-0.784,1],["C",0.861,-1.281,1],["C",-0.003,-0.778,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2,0.865,-0.281],[4,5,1],[5,6,2,0.865,-0.281],[6,7,1],[7,8,2,0.865,-0.281],[8,3,1]]},{"id":"m117","lv":3,"a":[["O",-0.894,-1.546,0],["C",-0.393,-0.68,0],["C",-0.893,0.186,0],["C",-1.893,0.187,1],["C",-2.392,1.054,1],["C",-1.891,1.919,1],["C",-0.891,1.918,1],["C",-0.392,1.052,1],["C",0.607,-0.681,0],["C",1.107,0.185,1],["C",2.107,0.184,1],["C",2.607,-0.683,1],["C",2.106,-1.548,1],["C",1.106,-1.547,1]],"b":[[0,1,2],[1,2,1],[2,3,2,-1.392,1.053],[3,4,1],[4,5,2,-1.392,1.053],[5,6,1],[6,7,2,-1.392,1.053],[1,8,1],[8,9,2,1.607,-0.682],[9,10,1],[10,11,2,1.607,-0.682],[11,12,1],[12,13,2,1.607,-0.682],[7,2,1],[13,8,1]]},{"id":"m118","lv":3,"a":[["C",-2.537,-0.804,1],["C",-2.035,-1.669,1],["C",-1.035,-1.667,1],["C",-0.537,-0.8,0],["O",0.463,-0.798,0],["C",0.961,0.069,0],["C",0.46,0.934,1],["C",0.958,1.801,1],["C",1.958,1.803,1],["C",2.46,0.938,1],["C",1.961,0.071,1],["C",-1.039,0.065,1],["C",-2.039,0.063,1]],"b":[[0,1,2,-1.537,-0.802],[1,2,1],[2,3,2,-1.537,-0.802],[3,4,1],[4,5,1],[5,6,2,1.46,0.936],[6,7,1],[7,8,2,1.46,0.936],[8,9,1],[9,10,2,1.46,0.936],[3,11,1],[11,12,2,-1.537,-0.802],[12,0,1],[10,5,1]]},{"id":"m119","lv":3,"a":[["C",1.97,-2.044,3],["O",1.969,-1.044,0],["C",1.103,-0.545,0],["C",0.237,-1.045,1],["C",-0.629,-0.546,1],["C",-0.63,0.454,0],["C",-1.497,0.953,0],["O",-2.362,0.453,0],["C",0.235,0.955,1],["C",1.102,0.455,1],["H",-1.497,1.953,0]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2,0.236,-0.045],[4,5,1],[5,6,1],[6,7,2],[5,8,2,0.236,-0.045],[8,9,1],[9,2,2,0.236,-0.045],[6,10,1]]},{"id":"m120","lv":3,"a":[["C",2.17,1.314,3],["C",1.302,0.817,2],["N",1.298,-0.183,0],["C",2.163,-0.686,2],["C",3.03,-0.189,3],["C",0.431,-0.68,0],["O",0.427,-1.68,0],["C",-0.433,-0.177,0],["C",-0.43,0.823,1],["C",-1.294,1.326,1],["C",-2.162,0.829,1],["C",-2.166,-0.171,0],["C",-3.033,-0.668,3],["C",-1.301,-0.674,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[2,5,1],[5,6,2],[5,7,1],[7,8,2,-1.298,0.326],[8,9,1],[9,10,2,-1.298,0.326],[10,11,1],[11,12,1],[11,13,2,-1.298,0.326],[13,7,1]]},{"id":"m121","lv":4,"a":[["O",-1.855,0.218,1],["C",-0.99,-0.284,2],["C",-0.123,0.215,1],["O",-0.121,1.215,1],["C",0.742,-0.287,0],["O",0.74,-1.287,0],["O",1.609,0.211,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[2,4,1],[4,5,2],[4,6,1]]},{"id":"m122","lv":4,"a":[["O",-0.272,-2.152,1],["C",0.228,-1.286,0],["O",1.228,-1.286,0],["C",-0.272,-0.42,2],["C",0.228,0.446,0],["O",0.728,-0.42,1],["C",-0.638,0.946,2],["C",-1.504,0.446,0],["O",-1.504,-0.554,0],["O",-2.37,0.946,1],["C",1.094,0.946,0],["O",1.094,1.946,0],["O",1.96,0.446,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[4,6,1],[6,7,1],[7,8,2],[7,9,1],[4,10,1],[10,11,2],[10,12,1]]},{"id":"m123","lv":4,"a":[["N",0.501,1.113,2],["C",0.0,0.247,1],["C",-1.0,0.248,2],["O",-1.499,1.115,1],["C",0.5,-0.619,0],["O",-0.001,-1.485,0],["O",1.5,-0.62,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[1,4,1],[4,5,2],[4,6,1]]},{"id":"m124","lv":4,"a":[["C",-1.31,1.194,3],["C",-0.812,0.326,1],["O",-1.313,-0.539,1],["C",0.188,0.324,1],["N",0.69,1.189,2],["C",0.686,-0.543,0],["O",0.185,-1.408,0],["O",1.686,-0.545,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[3,5,1],[5,6,2],[5,7,1]]},{"id":"m125","lv":4,"a":[["N",-0.215,1.375,2],["C",0.65,0.875,1],["C",0.649,-0.125,2],["C",-0.217,-0.625,0],["C",-0.218,-1.625,1],["C",-1.084,-2.124,1],["C",-1.95,-1.624,1],["C",-1.949,-0.623,1],["C",-1.083,-0.124,1],["C",1.517,1.374,0],["O",2.382,0.873,0],["O",1.517,2.374,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2,-1.084,-1.124],[4,5,1],[5,6,2,-1.084,-1.124],[6,7,1],[7,8,2,-1.084,-1.124],[1,9,1],[9,10,2],[9,11,1],[8,3,1]]},{"id":"m126","lv":4,"a":[["N",0.889,0.769,2],["C",0.389,-0.097,1],["C",-0.611,-0.096,2],["C",-1.111,0.771,0],["O",-0.61,1.636,0],["O",-2.111,0.771,1],["C",0.888,-0.963,0],["O",0.387,-1.829,0],["O",1.888,-0.964,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1],[1,6,1],[6,7,2],[6,8,1]]},{"id":"m127","lv":4,"a":[["N",1.351,0.778,2],["C",0.85,-0.087,1],["C",-0.15,-0.086,2],["C",-0.649,0.78,2],["C",-1.649,0.781,0],["O",-2.15,-0.085,0],["O",-2.149,1.647,1],["C",1.349,-0.954,0],["O",0.849,-1.819,0],["O",2.349,-0.955,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,2],[4,6,1],[1,7,1],[7,8,2],[7,9,1]]},{"id":"m128","lv":4,"a":[["N",1.351,0.778,2],["C",0.85,-0.087,1],["C",-0.15,-0.086,2],["C",-0.649,0.78,2],["C",-1.649,0.781,0],["N",-2.149,1.647,2],["O",-2.15,-0.085,0],["C",1.349,-0.954,0],["O",0.849,-1.819,0],["O",2.349,-0.955,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[4,6,2],[1,7,1],[7,8,2],[7,9,1]]},{"id":"m129","lv":4,"a":[["N",0.889,0.769,2],["C",0.389,-0.097,1],["C",-0.611,-0.096,2],["C",-1.111,0.771,0],["N",-2.111,0.771,2],["O",-0.61,1.636,0],["C",0.888,-0.963,0],["O",0.387,-1.829,0],["O",1.888,-0.964,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[3,5,2],[1,6,1],[6,7,2],[6,8,1]]},{"id":"m130","lv":4,"a":[["N",-3.049,1.475,2],["C",-2.049,1.474,2],["C",-1.55,0.607,2],["C",-0.55,0.607,2],["C",-0.05,-0.26,2],["C",0.95,-0.261,1],["N",1.45,0.605,2],["C",1.449,-1.127,0],["O",0.948,-1.993,0],["O",2.449,-1.128,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[5,7,1],[7,8,2],[7,9,1]]},{"id":"m131","lv":4,"a":[["O",-2.6,-1.959,1],["C",-1.733,-1.46,0],["C",-0.868,-1.961,1],["C",-0.001,-1.462,1],["C",-0.0,-0.461,0],["C",0.866,0.038,2],["C",0.867,1.038,1],["N",0.001,1.538,2],["C",1.733,1.537,0],["O",2.599,1.036,0],["O",1.734,2.537,1],["C",-0.866,0.039,1],["C",-1.732,-0.46,1]],"b":[[0,1,1],[1,2,1],[2,3,2,-0.867,-0.961],[3,4,1],[4,5,1],[5,6,1],[6,7,1],[6,8,1],[8,9,2],[8,10,1],[4,11,2,-0.867,-0.961],[11,12,1],[12,1,2,-0.867,-0.961]]},{"id":"m132","lv":4,"a":[["C",-2.674,0.919,3],["C",-1.809,0.416,0],["O",-1.813,-0.584,0],["N",-0.941,0.912,1],["C",-0.077,0.409,0],["C",0.791,0.906,1],["C",1.655,0.403,1],["C",1.651,-0.597,0],["O",2.515,-1.1,1],["C",0.783,-1.094,1],["C",-0.081,-0.591,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,2,0.787,-0.094],[6,7,1],[7,8,1],[7,9,2,0.787,-0.094],[9,10,1],[10,4,2,0.787,-0.094]]},{"id":"m133","lv":4,"a":[["C",-2.958,-0.136,3],["N",-2.091,-0.632,1],["C",-1.226,-0.129,1],["C",-1.23,0.871,3],["C",-0.359,-0.626,1],["O",-0.355,-1.626,1],["C",0.506,-0.123,0],["C",1.373,-0.62,1],["C",2.238,-0.117,1],["C",2.234,0.883,1],["C",1.366,1.38,1],["C",0.502,0.877,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[2,4,1],[4,5,1],[4,6,1],[6,7,2,1.37,0.38],[7,8,1],[8,9,2,1.37,0.38],[9,10,1],[10,11,2,1.37,0.38],[11,6,1]]},{"id":"m134","lv":4,"a":[["N",-2.957,-0.636,2],["C",-2.092,-0.132,2],["C",-1.225,-0.629,1],["O",-1.221,-1.629,1],["C",-0.36,-0.126,0],["C",-0.364,0.874,1],["C",0.5,1.377,1],["C",1.368,0.88,0],["O",2.232,1.383,1],["C",1.372,-0.12,0],["O",2.239,-0.617,1],["C",0.507,-0.623,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[2,4,1],[4,5,1],[5,6,2,0.504,0.377],[6,7,1],[7,8,1],[7,9,2,0.504,0.377],[9,10,1],[9,11,1],[11,4,2,0.504,0.377]]},{"id":"m135","lv":4,"a":[["C",-3.53,-0.128,3],["N",-2.662,-0.625,1],["C",-1.798,-0.122,2],["C",-0.93,-0.619,1],["O",-0.927,-1.619,1],["C",-0.066,-0.116,0],["C",-0.07,0.884,1],["C",0.794,1.388,1],["C",1.662,0.891,0],["O",2.526,1.394,1],["C",1.666,-0.109,0],["O",2.534,-0.606,1],["C",0.802,-0.613,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[3,5,1],[5,6,1],[6,7,2,0.798,0.387],[7,8,1],[8,9,1],[8,10,2,0.798,0.387],[10,11,1],[10,12,1],[12,5,2,0.798,0.387]]},{"id":"m136","lv":4,"a":[["N",-3.068,0.784,2],["C",-2.203,0.281,2],["C",-1.336,0.778,2],["C",-0.472,0.274,0],["C",-0.475,-0.725,1],["C",0.389,-1.229,1],["C",1.257,-0.732,0],["O",2.121,-1.235,1],["C",1.26,0.268,0],["O",2.128,0.765,1],["C",0.396,0.771,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,2,0.393,-0.229],[5,6,1],[6,7,1],[6,8,2,0.393,-0.229],[8,9,1],[8,10,1],[10,3,2,0.393,-0.229]]},{"id":"m137","lv":4,"a":[["C",1.157,-2.332,3],["O",0.29,-1.833,0],["C",0.289,-0.833,0],["C",-0.577,-0.334,1],["C",-0.578,0.666,0],["C",-1.444,1.165,0],["O",-2.31,0.665,0],["C",0.288,1.167,1],["C",1.154,0.668,1],["C",1.155,-0.332,0],["O",2.021,-0.832,1],["H",-1.445,2.166,0]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2,0.288,0.167],[4,5,1],[5,6,2],[4,7,1],[7,8,2,0.288,0.167],[8,9,1],[9,10,1],[9,2,2,0.288,0.167],[5,11,1]]},{"id":"m138","lv":4,"a":[["C",-2.773,2.531,3],["C",-1.907,2.032,1],["C",-1.041,2.533,3],["C",-1.906,1.032,2],["C",-1.04,0.533,0],["C",-0.174,1.033,1],["C",0.692,0.534,1],["C",0.693,-0.466,0],["C",1.56,-0.965,1],["C",2.425,-0.465,3],["C",1.56,-1.965,0],["O",0.695,-2.466,0],["O",2.427,-2.465,1],["C",-0.172,-0.967,1],["C",-1.039,-0.468,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[4,5,1],[5,6,2,-0.173,0.033],[6,7,1],[7,8,1],[8,9,1],[8,10,1],[10,11,2],[10,12,1],[7,13,2,-0.173,0.033],[13,14,1],[14,4,2,-0.173,0.033]]},{"id":"m139","lv":4,"a":[["O",-1.698,-1.043,1],["C",-1.2,-0.176,0],["O",-1.701,0.689,0],["C",-0.2,-0.174,0],["C",0.302,-1.039,1],["C",1.302,-1.037,1],["C",1.8,-0.17,1],["C",1.299,0.695,1],["C",0.299,0.693,0],["O",-0.203,1.558,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,2,0.8,-0.172],[4,5,1],[5,6,2,0.8,-0.172],[6,7,1],[7,8,2,0.8,-0.172],[8,9,1],[8,3,1]]},{"id":"m140","lv":4,"a":[["O",1.3,1.749,1],["C",1.3,0.749,0],["O",2.165,0.248,0],["C",0.433,0.25,0],["C",0.432,-0.75,1],["C",-0.434,-1.25,1],["C",-1.3,-0.749,0],["N",-2.166,-1.248,2],["C",-1.299,0.251,1],["C",-0.432,0.75,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,2,-0.433,-0.25],[5,6,1],[6,7,1],[6,8,2,-0.433,-0.25],[8,9,1],[9,3,2,-0.433,-0.25]]},{"id":"m141","lv":4,"a":[["C",-2.214,-0.384,3],["C",-1.347,0.114,0],["O",-1.345,1.114,0],["C",-0.482,-0.388,2],["C",0.385,0.11,1],["O",0.387,1.11,1],["C",1.25,-0.391,0],["O",1.248,-1.391,0],["O",2.117,0.107,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[4,6,1],[6,7,2],[6,8,1]]},{"id":"m142","lv":4,"a":[["O",1.297,-1.253,0],["C",1.299,-0.253,0],["O",2.166,0.246,1],["C",0.434,0.249,1],["O",0.436,1.249,1],["C",-0.434,-0.249,1],["O",-0.436,-1.249,1],["C",-1.299,0.253,0],["O",-1.297,1.253,0],["O",-2.166,-0.246,1]],"b":[[0,1,2],[1,2,1],[1,3,1],[3,4,1],[3,5,1],[5,6,1],[5,7,1],[7,8,2],[7,9,1]]},{"id":"m143","lv":4,"a":[["O",-3.198,-0.148,1],["C",-2.331,0.351,2],["C",-1.466,-0.151,1],["O",-1.468,-1.151,1],["C",-0.599,0.347,1],["O",-0.597,1.347,1],["C",0.266,-0.154,1],["O",0.264,-1.154,1],["C",1.133,0.344,1],["O",1.135,1.344,1],["C",1.998,-0.158,0],["O",1.996,-1.158,0],["H",2.865,0.34,0]],"b":[[0,1,1],[1,2,1],[2,3,1],[2,4,1],[4,5,1],[4,6,1],[6,7,1],[6,8,1],[8,9,1],[8,10,1],[10,11,2],[10,12,1]]},{"id":"m144","lv":4,"a":[["O",-2.753,-1.293,1],["C",-1.753,-1.295,2],["C",-1.251,-0.43,0],["O",-1.749,0.437,0],["C",-0.251,-0.433,1],["O",0.247,-1.3,1],["C",0.251,0.433,1],["O",-0.247,1.3,1],["C",1.251,0.43,1],["O",1.749,-0.437,1],["C",1.753,1.295,2],["O",2.753,1.293,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,1],[4,6,1],[6,7,1],[6,8,1],[8,9,1],[8,10,1],[10,11,1]]},{"id":"m145","lv":4,"a":[["C",-2.215,-0.381,3],["C",-1.347,0.116,0],["O",-1.343,1.116,0],["N",-0.483,-0.387,1],["C",0.385,0.11,1],["C",0.389,1.11,3],["C",1.25,-0.393,0],["O",1.246,-1.393,0],["O",2.117,0.103,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[4,6,1],[6,7,2],[6,8,1]]},{"id":"m146","lv":4,"a":[["C",2.911,-0.601,3],["O",2.043,-1.098,0],["C",1.179,-0.595,0],["C",1.182,0.405,1],["C",0.318,0.908,1],["C",-0.55,0.411,0],["C",-1.414,0.914,2],["C",-2.282,0.417,2],["N",-3.146,0.92,2],["C",-0.553,-0.589,1],["C",0.311,-1.092,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2,0.315,-0.092],[4,5,1],[5,6,1],[6,7,1],[7,8,1],[5,9,2,0.315,-0.092],[9,10,1],[10,2,2,0.315,-0.092]]},{"id":"m147","lv":4,"a":[["C",1.3,1.749,3],["C",1.3,0.749,0],["O",2.165,0.248,0],["C",0.433,0.25,0],["C",0.432,-0.75,1],["C",-0.434,-1.25,1],["C",-1.3,-0.749,0],["O",-2.166,-1.248,1],["C",-1.299,0.251,1],["C",-0.432,0.75,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,2,-0.433,-0.25],[5,6,1],[6,7,1],[6,8,2,-0.433,-0.25],[8,9,1],[9,3,2,-0.433,-0.25]]},{"id":"m148","lv":4,"a":[["O",-2.598,0.498,0],["C",-1.733,0.999,0],["C",-0.866,0.499,0],["C",-0.866,-0.501,1],["C",0.001,-1.0,1],["C",0.866,-0.499,0],["N",1.733,-0.999,0],["C",1.734,-1.999,3],["C",2.598,-0.498,3],["C",0.866,0.501,1],["C",-0.001,1.0,1],["H",-1.734,1.999,0]],"b":[[0,1,2],[1,2,1],[2,3,1],[3,4,2,0.0,0.0],[4,5,1],[5,6,1],[6,7,1],[6,8,1],[5,9,2,0.0,0.0],[9,10,1],[10,2,2,0.0,0.0],[1,11,1]]},{"id":"m149","lv":4,"a":[["O",3.395,-0.589,1],["C",2.531,-0.086,0],["O",2.535,0.914,0],["C",1.663,-0.583,2],["N",0.799,-0.08,1],["C",-0.069,-0.577,0],["O",-0.072,-1.577,0],["C",-0.933,-0.074,0],["C",-1.801,-0.57,1],["C",-2.665,-0.067,1],["C",-2.661,0.933,1],["C",-1.794,1.43,1],["C",-0.929,0.926,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,2],[5,7,1],[7,8,2,-1.797,0.43],[8,9,1],[9,10,2,-1.797,0.43],[10,11,1],[11,12,2,-1.797,0.43],[12,7,1]]},{"id":"m150","lv":4,"a":[["C",1.95,1.874,3],["N",1.084,1.374,0],["C",0.218,1.875,3],["C",1.083,0.374,0],["O",1.948,-0.127,0],["C",0.216,-0.125,0],["C",0.216,-1.125,1],["C",-0.651,-1.625,1],["C",-1.516,-1.124,0],["O",-2.383,-1.623,1],["C",-1.516,-0.124,1],["C",-0.649,0.376,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,2],[3,5,1],[5,6,1],[6,7,2,-0.65,-0.624],[7,8,1],[8,9,1],[8,10,2,-0.65,-0.624],[10,11,1],[11,5,2,-0.65,-0.624]]},{"id":"m151","lv":4,"a":[["N",-2.887,0.073,2],["C",-2.019,-0.424,0],["O",-2.016,-1.424,0],["C",-1.155,0.079,2],["C",-0.287,-0.418,1],["O",-0.283,-1.418,1],["C",0.577,0.085,0],["C",1.445,-0.412,1],["C",2.309,0.092,1],["C",2.306,1.092,1],["C",1.438,1.589,1],["C",0.574,1.085,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[4,6,1],[6,7,2,1.442,0.589],[7,8,1],[8,9,2,1.442,0.589],[9,10,1],[10,11,2,1.442,0.589],[11,6,1]]},{"id":"m152","lv":4,"a":[["O",-3.897,0.11,1],["C",-3.031,-0.39,0],["O",-3.032,-1.39,0],["C",-2.165,0.109,2],["C",-1.299,-0.392,2],["C",-0.433,0.107,2],["C",0.433,-0.393,0],["O",0.432,-1.393,0],["C",1.299,0.106,0],["C",2.165,-0.395,1],["C",3.031,0.105,1],["C",3.032,1.105,1],["C",2.166,1.605,1],["C",1.3,1.106,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,2],[6,8,1],[8,9,2,2.166,0.605],[9,10,1],[10,11,2,2.166,0.605],[11,12,1],[12,13,2,2.166,0.605],[13,8,1]]},{"id":"m153","lv":4,"a":[["C",-3.291,0.007,3],["O",-2.424,0.505,0],["C",-1.559,0.003,2],["C",-0.692,0.501,2],["C",0.173,-0.0,0],["O",0.171,-1.0,0],["C",1.04,0.498,2],["C",1.905,-0.004,0],["O",1.903,-1.004,0],["O",2.772,0.494,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,2],[4,6,1],[6,7,1],[7,8,2],[7,9,1]]},{"id":"m154","lv":4,"a":[["N",1.3,1.749,2],["C",1.3,0.749,0],["O",2.165,0.248,0],["C",0.433,0.25,0],["C",0.432,-0.75,1],["C",-0.434,-1.25,1],["C",-1.3,-0.749,0],["O",-2.166,-1.248,1],["C",-1.299,0.251,1],["C",-0.432,0.75,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,2,-0.433,-0.25],[5,6,1],[6,7,1],[6,8,2,-0.433,-0.25],[8,9,1],[9,3,2,-0.433,-0.25]]},{"id":"m155","lv":4,"a":[["N",-1.23,0.871,2],["C",-1.226,-0.129,1],["C",-2.091,-0.632,2],["O",-2.958,-0.136,1],["C",-0.359,-0.626,1],["O",-0.355,-1.626,1],["C",0.506,-0.123,0],["C",1.373,-0.62,1],["C",2.238,-0.117,1],["C",2.234,0.883,1],["C",1.366,1.38,1],["C",0.502,0.877,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[1,4,1],[4,5,1],[4,6,1],[6,7,2,1.37,0.38],[7,8,1],[8,9,2,1.37,0.38],[9,10,1],[10,11,2,1.37,0.38],[11,6,1]]},{"id":"m156","lv":4,"a":[["C",-4.273,-0.53,3],["C",-3.406,-0.031,1],["C",-3.406,0.969,3],["N",-2.541,-0.531,1],["C",-1.674,-0.032,2],["C",-0.809,-0.533,1],["O",-0.81,-1.533,1],["C",0.058,-0.033,2],["O",0.923,-0.534,0],["C",1.79,-0.035,0],["C",2.655,-0.535,1],["C",3.522,-0.036,1],["C",3.523,0.964,1],["C",2.657,1.465,1],["C",1.791,0.965,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[4,5,1],[5,6,1],[5,7,1],[7,8,1],[8,9,1],[9,10,2,2.656,0.465],[10,11,1],[11,12,2,2.656,0.465],[12,13,1],[13,14,2,2.656,0.465],[14,9,1]]},{"id":"m157","lv":4,"a":[["C",-3.866,-0.647,3],["C",-3.002,-0.144,1],["C",-3.005,0.856,3],["N",-2.134,-0.641,1],["C",-1.27,-0.138,2],["C",-0.402,-0.635,1],["O",-0.398,-1.635,1],["C",0.462,-0.132,0],["C",0.459,0.868,1],["C",1.323,1.371,1],["C",2.191,0.874,0],["O",3.055,1.378,1],["C",2.194,-0.125,0],["O",3.062,-0.622,1],["C",1.33,-0.629,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[4,5,1],[5,6,1],[5,7,1],[7,8,1],[8,9,2,1.327,0.371],[9,10,1],[10,11,1],[10,12,2,1.327,0.371],[12,13,1],[12,14,1],[14,7,2,1.327,0.371]]},{"id":"m158","lv":4,"a":[["N",-2.439,-0.503,2],["C",-1.574,-0.005,1],["C",-1.577,0.997,2],["O",-0.712,1.499,1],["C",-0.707,-0.503,0],["O",-0.706,-1.502,0],["N",0.157,0.002,1],["C",1.023,-0.498,2],["C",1.891,0.004,0],["O",1.888,1.004,0],["O",2.757,-0.495,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[1,4,1],[4,5,2],[4,6,1],[6,7,1],[7,8,1],[8,9,2],[8,10,1]]},{"id":"m159","lv":4,"a":[["C",-1.535,2.951,3],["C",-2.034,2.084,1],["N",-3.033,2.082,2],["C",-1.532,1.219,0],["O",-2.03,0.352,0],["N",-0.532,1.222,1],["C",-0.03,0.357,1],["C",0.97,0.359,2],["C",1.472,-0.505,0],["C",0.972,-1.374,1],["C",1.475,-2.238,1],["C",2.475,-2.238,1],["C",2.974,-1.369,1],["C",2.471,-0.505,1],["C",-0.528,-0.51,0],["O",-0.026,-1.375,0],["O",-1.528,-0.513,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,2],[3,5,1],[5,6,1],[6,7,1],[7,8,1],[8,9,2,1.973,-1.371],[9,10,1],[10,11,2,1.973,-1.371],[11,12,1],[12,13,2,1.973,-1.371],[6,14,1],[14,15,2],[14,16,1],[13,8,1]]},{"id":"m160","lv":4,"a":[["O",-2.814,-0.135,1],["C",-1.946,-0.632,0],["O",-1.943,-1.632,0],["C",-1.082,-0.129,1],["O",-1.086,0.871,1],["C",-0.214,-0.626,2],["C",0.65,-0.123,0],["C",1.518,-0.62,1],["C",2.382,-0.117,1],["C",2.378,0.884,1],["C",1.511,1.381,1],["C",0.646,0.877,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[3,5,1],[5,6,1],[6,7,2,1.514,0.38],[7,8,1],[8,9,2,1.514,0.38],[9,10,1],[10,11,2,1.514,0.38],[11,6,1]]},{"id":"m161","lv":4,"a":[["C",-3.395,-0.589,3],["N",-2.531,-0.086,0],["C",-2.535,0.914,3],["C",-1.663,-0.583,2],["C",-0.799,-0.08,2],["C",0.069,-0.577,0],["O",0.072,-1.577,0],["C",0.933,-0.074,0],["C",1.801,-0.57,1],["C",2.665,-0.067,1],["C",2.661,0.933,1],["C",1.794,1.43,1],["C",0.929,0.926,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,1],[4,5,1],[5,6,2],[5,7,1],[7,8,2,1.797,0.43],[8,9,1],[9,10,2,1.797,0.43],[10,11,1],[11,12,2,1.797,0.43],[12,7,1]]},{"id":"m162","lv":5,"a":[["C",-2.664,-0.313,3],["C",-1.799,0.189,0],["O",-1.801,1.189,0],["O",-0.932,-0.31,0],["C",-0.067,0.192,0],["C",-0.069,1.192,1],["C",0.796,1.694,1],["C",1.663,1.196,1],["C",1.665,0.196,1],["C",0.8,-0.306,0],["C",0.802,-1.306,0],["O",-0.063,-1.808,0],["O",1.669,-1.804,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,2,0.798,0.694],[5,6,1],[6,7,2,0.798,0.694],[7,8,1],[8,9,2,0.798,0.694],[9,10,1],[10,11,2],[10,12,1],[9,4,1]]},{"id":"m163","lv":5,"a":[["C",-2.597,-0.418,3],["O",-1.732,0.085,0],["C",-0.864,-0.412,0],["O",-0.861,-1.412,0],["C",-0.0,0.091,0],["C",-0.004,1.091,1],["C",0.86,1.594,1],["C",1.728,1.097,1],["C",1.732,0.097,1],["C",0.868,-0.406,0],["O",0.871,-1.406,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,2,0.864,0.594],[5,6,1],[6,7,2,0.864,0.594],[7,8,1],[8,9,2,0.864,0.594],[9,10,1],[9,4,1]]},{"id":"m164","lv":5,"a":[["C",-3.319,-0.179,3],["C",-2.451,-0.675,2],["O",-1.587,-0.172,0],["C",-0.719,-0.669,0],["O",-0.716,-1.669,0],["C",0.145,-0.166,0],["C",1.013,-0.663,1],["C",1.877,-0.16,1],["C",1.873,0.84,0],["N",2.738,1.343,2],["C",1.006,1.337,1],["C",0.141,0.834,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1],[5,6,1],[6,7,2,1.009,0.337],[7,8,1],[8,9,1],[8,10,2,1.009,0.337],[10,11,1],[11,5,2,1.009,0.337]]},{"id":"m165","lv":5,"a":[["C",-3.618,-1.85,3],["C",-2.752,-1.351,2],["N",-2.751,-0.351,0],["C",-3.617,0.15,2],["C",-4.483,-0.349,3],["C",-1.885,0.149,2],["C",-1.019,-0.352,2],["O",-0.153,0.147,0],["C",0.713,-0.353,0],["O",0.712,-1.353,0],["C",1.579,0.146,0],["C",2.445,-0.355,1],["C",3.311,0.144,1],["C",3.312,1.144,0],["N",4.179,1.644,2],["C",2.447,1.645,1],["C",1.58,1.146,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[2,5,1],[5,6,1],[6,7,1],[7,8,1],[8,9,2],[8,10,1],[10,11,1],[11,12,2,2.446,0.645],[12,13,1],[13,14,1],[13,15,2,2.446,0.645],[15,16,1],[16,10,2,2.446,0.645]]},{"id":"m166","lv":5,"a":[["C",-3.007,-1.204,3],["C",-2.14,-0.704,2],["N",-2.139,0.296,0],["C",-3.005,0.797,2],["C",-3.871,0.297,3],["C",-1.273,0.795,2],["C",-0.407,0.295,0],["O",-0.408,-0.705,0],["N",0.459,0.794,1],["C",1.325,0.293,0],["C",2.191,0.792,0],["C",2.192,1.792,3],["C",3.057,0.292,1],["C",3.056,-0.708,1],["C",2.19,-1.208,1],["C",1.324,-0.707,0],["C",0.458,-1.206,3]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[2,5,1],[5,6,1],[6,7,2],[6,8,1],[8,9,1],[9,10,2,2.191,-0.208],[10,11,1],[10,12,1],[12,13,2,2.191,-0.208],[13,14,1],[14,15,2,2.191,-0.208],[15,16,1],[15,9,1]]},{"id":"m167","lv":5,"a":[["C",-2.855,-0.696,3],["O",-1.988,-0.199,0],["C",-1.123,-0.702,0],["O",-1.127,-1.702,0],["C",-0.256,-0.205,1],["C",-0.252,0.795,0],["C",-1.116,1.298,1],["C",-1.113,2.298,1],["C",-0.245,2.795,1],["C",0.619,2.292,1],["C",0.616,1.292,1],["C",0.609,-0.708,1],["C",0.605,-1.708,2],["C",1.469,-2.211,2],["C",2.337,-1.714,2],["C",2.341,-0.714,2],["N",1.477,-0.211,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,1],[5,6,2,-0.249,1.795],[6,7,1],[7,8,2,-0.249,1.795],[8,9,1],[9,10,2,-0.249,1.795],[4,11,1],[11,12,1],[12,13,1],[13,14,1],[14,15,1],[15,16,1],[10,5,1],[16,11,1]]},{"id":"m168","lv":5,"a":[["C",-2.79,0.506,3],["C",-1.925,0.004,2],["O",-1.058,0.502,0],["C",-0.193,0.0,0],["O",-0.195,-1.0,0],["C",0.675,0.499,2],["C",1.54,-0.003,0],["C",2.407,0.495,3],["O",1.538,-1.003,0]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1],[5,6,1],[6,7,1],[6,8,2]]},{"id":"m169","lv":5,"a":[["C",-3.395,-0.589,3],["C",-2.531,-0.086,0],["O",-2.535,0.914,0],["O",-1.663,-0.583,0],["C",-0.799,-0.08,2],["C",0.069,-0.577,0],["O",0.072,-1.577,0],["C",0.933,-0.074,0],["C",1.801,-0.57,1],["C",2.665,-0.067,1],["C",2.661,0.933,1],["C",1.794,1.43,1],["C",0.929,0.926,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,2],[5,7,1],[7,8,2,1.797,0.43],[8,9,1],[9,10,2,1.797,0.43],[10,11,1],[11,12,2,1.797,0.43],[12,7,1]]},{"id":"m170","lv":5,"a":[["C",2.638,0.621,3],["O",1.773,0.12,0],["C",0.907,0.62,0],["O",0.906,1.62,0],["C",0.041,0.119,1],["C",0.042,-0.881,2],["C",0.908,-1.379,0],["C",1.774,-0.88,1],["C",2.641,-1.378,1],["C",2.641,-2.38,1],["C",1.776,-2.879,1],["C",0.909,-2.381,1],["N",-0.825,0.618,1],["C",-1.691,0.118,0],["O",-1.69,-0.882,0],["C",-2.557,0.617,1],["N",-3.423,0.116,2],["C",-2.558,1.617,2],["C",-1.692,2.118,0],["O",-0.826,1.618,0],["O",-1.693,3.118,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,1],[5,6,1],[6,7,2,1.775,-1.879],[7,8,1],[8,9,2,1.775,-1.879],[9,10,1],[10,11,2,1.775,-1.879],[4,12,1],[12,13,1],[13,14,2],[13,15,1],[15,16,1],[15,17,1],[17,18,1],[18,19,2],[18,20,1],[11,6,1]]},{"id":"m171","lv":5,"a":[["C",-3.355,0.289,3],["C",-2.489,-0.207,2],["O",-1.624,0.293,0],["C",-0.766,-0.212,0],["O",-0.792,-1.209,0],["C",0.123,0.295,0],["C",0.501,-0.653,0],["C",-0.125,-1.426,1],["C",0.228,-2.356,1],["C",1.208,-2.512,1],["C",1.837,-1.741,1],["C",1.481,-0.812,1],["C",1.108,0.475,2],["C",1.443,1.417,2],["N",0.798,2.18,0],["C",1.134,3.121,3],["C",-0.188,2.0,2],["C",-0.522,1.059,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1],[5,6,1],[6,7,2,0.855,-1.583],[7,8,1],[8,9,2,0.855,-1.583],[9,10,1],[10,11,2,0.855,-1.583],[5,12,1],[12,13,1],[13,14,1],[14,15,1],[14,16,1],[16,17,1],[17,5,1],[11,6,1]]},{"id":"m172","lv":5,"a":[["C",-2.753,-0.692,3],["O",-1.889,-0.189,0],["C",-1.021,-0.685,0],["O",-1.017,-1.685,0],["C",-0.157,-0.182,1],["C",0.711,-0.679,2],["C",1.575,-0.176,2],["C",1.572,0.824,0],["O",2.436,1.327,0],["C",0.704,1.321,2],["C",-0.16,0.818,2]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,1],[5,6,1],[6,7,1],[7,8,2],[7,9,1],[9,10,1],[10,4,1]]},{"id":"m173","lv":5,"a":[["O",-1.337,-0.77,0],["C",-0.47,-0.271,0],["C",-0.364,0.724,2],["C",0.614,0.931,2],["C",1.113,0.064,2],["O",0.443,-0.678,0]],"b":[[0,1,2],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,1,1]]},{"id":"m174","lv":5,"a":[["C",2.382,0.37,3],["C",1.515,-0.128,0],["O",1.513,-1.128,0],["O",0.65,0.374,0],["C",-0.217,-0.125,2],["C",-1.082,0.377,2],["O",-1.949,-0.121,0],["C",-2.814,0.381,3]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1]]},{"id":"m175","lv":5,"a":[["C",-2.227,0.427,3],["O",-1.361,-0.072,0],["C",-0.495,0.428,2],["C",0.371,-0.071,0],["O",0.372,-1.071,0],["O",1.237,0.43,0],["C",2.103,-0.07,3]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1],[5,6,1]]},{"id":"m176","lv":5,"a":[["C",2.502,0.224,3],["C",1.636,-0.276,0],["O",1.637,-1.276,0],["O",0.77,0.223,0],["C",-0.096,-0.278,2],["C",-0.962,0.221,1],["O",-0.963,1.221,1],["C",-1.828,-0.279,2],["O",-2.695,0.22,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,1],[5,7,1],[7,8,1]]},{"id":"m177","lv":5,"a":[["C",-2.695,0.22,3],["O",-1.828,-0.279,0],["C",-0.962,0.221,0],["O",-0.963,1.221,0],["C",-0.096,-0.278,2],["C",0.77,0.223,2],["C",1.636,-0.276,0],["O",1.637,-1.276,0],["O",2.502,0.224,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,1],[5,6,1],[6,7,2],[6,8,1]]},{"id":"m178","lv":5,"a":[["C",3.4,-2.029,3],["C",2.4,-2.033,2],["O",1.897,-1.168,0],["C",0.897,-1.172,0],["O",0.4,-2.04,0],["C",0.394,-0.308,1],["N",0.891,0.56,2],["C",-0.606,-0.312,2],["C",-1.109,0.553,0],["C",-2.109,0.549,1],["C",-2.612,1.413,1],["C",-2.115,2.281,1],["C",-1.115,2.285,1],["C",-0.612,1.421,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1],[5,6,1],[5,7,1],[7,8,1],[8,9,2,-1.612,1.417],[9,10,1],[10,11,2,-1.612,1.417],[11,12,1],[12,13,2,-1.612,1.417],[13,8,1]]},{"id":"m179","lv":5,"a":[["C",2.183,2.494,3],["C",1.684,1.627,0],["O",2.186,0.762,0],["N",0.684,1.625,1],["C",0.186,0.758,1],["C",-0.814,0.756,2],["C",-1.312,-0.111,0],["C",-2.312,-0.113,1],["C",-2.811,-0.98,1],["C",-2.309,-1.845,1],["C",-1.309,-1.843,1],["C",-0.811,-0.976,1],["C",0.688,-0.107,0],["O",0.189,-0.974,0],["O",1.688,-0.105,0],["C",2.189,-0.97,3]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,2,-1.811,-0.978],[7,8,1],[8,9,2,-1.811,-0.978],[9,10,1],[10,11,2,-1.811,-0.978],[4,12,1],[12,13,2],[12,14,1],[14,15,1],[11,6,1]]},{"id":"m180","lv":5,"a":[["C",2.931,0.305,3],["O",2.066,0.806,0],["C",1.199,0.307,0],["C",0.334,0.807,1],["C",-0.533,0.308,0],["C",-1.398,0.809,2],["C",-2.265,0.31,0],["O",-2.266,-0.691,0],["O",-3.13,0.81,1],["C",-0.533,-0.692,1],["C",0.332,-1.193,1],["C",1.199,-0.693,0],["O",2.064,-1.194,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2,0.333,-0.193],[4,5,1],[5,6,1],[6,7,2],[6,8,1],[4,9,1],[9,10,2,0.333,-0.193],[10,11,1],[11,12,1],[11,2,2,0.333,-0.193]]},{"id":"m181","lv":5,"a":[["C",-2.728,-1.138,3],["C",-2.23,-0.271,0],["O",-2.732,0.594,0],["C",-1.23,-0.269,0],["C",-0.732,0.598,1],["C",0.268,0.6,1],["C",0.77,-0.265,0],["O",1.77,-0.263,0],["C",2.268,0.604,0],["C",3.268,0.606,3],["O",1.766,1.469,0],["C",0.271,-1.132,1],["C",-0.728,-1.134,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,2,-0.23,-0.267],[5,6,1],[6,7,1],[7,8,1],[8,9,1],[8,10,2],[6,11,2,-0.23,-0.267],[11,12,1],[12,3,2,-0.23,-0.267]]},{"id":"m182","lv":5,"a":[["O",0.818,-1.716,0],["C",0.814,-0.716,0],["O",-0.053,-0.219,0],["C",-0.918,-0.722,2],["C",-1.785,-0.225,0],["C",-1.789,0.775,1],["C",-2.657,1.272,1],["C",-3.521,0.768,1],["C",-3.517,-0.231,1],["C",-2.649,-0.728,1],["C",1.679,-0.213,0],["C",2.546,-0.71,1],["C",3.411,-0.207,1],["C",3.407,0.793,1],["C",2.539,1.29,1],["C",1.675,0.787,1]],"b":[[0,1,2],[1,2,1],[2,3,1],[3,4,1],[4,5,2,-2.653,0.272],[5,6,1],[6,7,2,-2.653,0.272],[7,8,1],[8,9,2,-2.653,0.272],[1,10,1],[10,11,2,2.543,0.29],[11,12,1],[12,13,2,2.543,0.29],[13,14,1],[14,15,2,2.543,0.29],[9,4,1],[15,10,1]]},{"id":"m183","lv":5,"a":[["C",-2.753,-0.692,3],["O",-1.889,-0.189,0],["C",-1.021,-0.685,0],["O",-1.017,-1.685,0],["C",-0.157,-0.182,0],["C",0.711,-0.679,1],["C",1.575,-0.176,1],["C",1.572,0.824,0],["O",2.436,1.327,1],["C",0.704,1.321,1],["C",-0.16,0.818,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,1],[5,6,2,0.708,0.321],[6,7,1],[7,8,1],[7,9,2,0.708,0.321],[9,10,1],[10,4,2,0.708,0.321]]},{"id":"m184","lv":5,"a":[["C",-4.392,-0.104,3],["C",-3.526,-0.604,2],["C",-2.66,-0.105,2],["C",-1.794,-0.606,2],["O",-0.928,-0.106,0],["C",-0.062,-0.607,0],["O",-0.063,-1.607,0],["C",0.804,-0.108,0],["C",1.67,-0.608,1],["C",2.536,-0.109,1],["C",2.537,0.891,0],["O",3.403,1.39,1],["C",1.671,1.392,1],["C",0.805,0.892,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,2],[5,7,1],[7,8,1],[8,9,2,1.67,0.392],[9,10,1],[10,11,1],[10,12,2,1.67,0.392],[12,13,1],[13,7,2,1.67,0.392]]},{"id":"m185","lv":5,"a":[["C",-3.319,-0.179,3],["C",-2.451,-0.675,2],["O",-1.587,-0.172,0],["C",-0.719,-0.669,0],["O",-0.716,-1.669,0],["C",0.145,-0.166,1],["C",1.013,-0.663,2],["C",1.877,-0.16,2],["N",1.873,0.84,0],["C",2.738,1.343,3],["C",1.006,1.337,2],["C",0.141,0.834,2]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1],[5,6,1],[6,7,1],[7,8,1],[8,9,1],[8,10,1],[10,11,1],[11,5,1]]},{"id":"m186","lv":5,"a":[["C",-2.421,-1.271,3],["O",-1.421,-1.269,0],["C",-0.922,-0.402,0],["O",-1.424,0.463,0],["C",0.078,-0.4,0],["C",0.58,-1.265,1],["C",1.58,-1.263,1],["C",2.078,-0.396,1],["C",1.576,0.469,1],["C",0.576,0.467,0],["C",0.074,1.333,0],["O",-0.926,1.331,0],["O",0.573,2.2,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,2,1.078,-0.398],[5,6,1],[6,7,2,1.078,-0.398],[7,8,1],[8,9,2,1.078,-0.398],[9,10,1],[10,11,2],[10,12,1],[9,4,1]]},{"id":"m187","lv":5,"a":[["C",1.949,-0.246,3],["C",1.082,0.252,1],["O",1.08,1.252,1],["C",0.217,-0.25,0],["O",0.219,-1.25,0],["O",-0.65,0.249,0],["C",-1.515,-0.253,2],["C",-2.382,0.245,3]],"b":[[0,1,1],[1,2,1],[1,3,1],[3,4,2],[3,5,1],[5,6,1],[6,7,1]]},{"id":"m188","lv":5,"a":[["N",-2.103,-0.07,2],["C",-1.237,0.43,2],["C",-0.371,-0.071,0],["O",-0.372,-1.071,0],["O",0.495,0.428,0],["C",1.361,-0.072,2],["C",2.227,0.427,3]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,1],[5,6,1]]},{"id":"m189","lv":5,"a":[["C",-3.959,-0.068,3],["O",-3.093,-0.569,0],["C",-2.227,-0.07,0],["O",-2.226,0.93,0],["C",-1.361,-0.57,2],["C",-0.495,-0.071,2],["C",0.371,-0.572,0],["O",0.37,-1.572,0],["C",1.237,-0.072,0],["C",2.103,-0.573,1],["C",2.969,-0.074,1],["C",2.97,0.926,1],["C",2.104,1.427,1],["C",1.238,0.928,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,1],[5,6,1],[6,7,2],[6,8,1],[8,9,2,2.103,0.427],[9,10,1],[10,11,2,2.103,0.427],[11,12,1],[12,13,2,2.103,0.427],[13,8,1]]},{"id":"m190","lv":5,"a":[["C",-4.021,0.11,3],["C",-3.155,-0.39,2],["O",-2.289,0.109,0],["C",-1.423,-0.392,0],["O",-1.424,-1.392,0],["C",-0.557,0.107,2],["C",0.309,-0.393,1],["O",0.308,-1.393,1],["C",1.175,0.106,0],["C",2.041,-0.394,1],["C",2.907,0.105,1],["C",2.908,1.105,1],["C",2.043,1.606,1],["C",1.176,1.106,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1],[5,6,1],[6,7,1],[6,8,1],[8,9,2,2.042,0.606],[9,10,1],[10,11,2,2.042,0.606],[11,12,1],[12,13,2,2.042,0.606],[13,8,1]]},{"id":"m191","lv":5,"a":[["C",-4.556,-0.143,3],["C",-3.689,0.355,0],["O",-3.687,1.355,0],["N",-2.824,-0.147,1],["C",-1.957,0.352,1],["C",-1.955,1.352,2],["C",-1.088,1.85,1],["C",-1.086,2.85,3],["C",-0.223,1.348,3],["C",-1.092,-0.15,0],["O",-1.094,-1.15,0],["N",-0.225,0.348,1],["C",0.64,-0.153,1],["C",1.506,0.345,2],["C",2.37,-0.157,0],["C",2.371,-1.156,1],["C",3.234,-1.66,1],["C",4.103,-1.16,1],["C",4.103,-0.161,1],["C",3.24,0.342,1],["C",0.638,-1.153,0],["O",-0.229,-1.652,0],["O",1.503,-1.655,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1],[6,8,1],[4,9,1],[9,10,2],[9,11,1],[11,12,1],[12,13,1],[13,14,1],[14,15,2,3.237,-0.659],[15,16,1],[16,17,2,3.237,-0.659],[17,18,1],[18,19,2,3.237,-0.659],[12,20,1],[20,21,2],[20,22,1],[19,14,1]]},{"id":"m192","lv":5,"a":[["C",5.944,-0.027,3],["O",5.078,-0.527,0],["C",4.212,-0.026,0],["C",3.346,-0.525,1],["C",2.48,-0.025,0],["C",1.614,-0.524,2],["N",0.748,-0.023,1],["C",-0.119,-0.523,0],["O",-0.119,-1.523,0],["C",-0.984,-0.022,2],["C",-1.851,-0.521,2],["C",-2.716,-0.02,2],["C",-3.583,-0.52,2],["C",-4.448,-0.019,2],["C",-5.315,-0.518,2],["C",-6.18,-0.018,1],["C",-7.047,-0.517,3],["C",-6.179,0.982,3],["C",2.481,0.975,1],["C",3.347,1.475,1],["C",4.213,0.974,0],["O",5.079,1.473,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2,3.347,0.475],[4,5,1],[5,6,1],[6,7,1],[7,8,2],[7,9,1],[9,10,1],[10,11,1],[11,12,1],[12,13,1],[13,14,1],[14,15,1],[15,16,1],[15,17,1],[4,18,1],[18,19,2,3.347,0.475],[19,20,1],[20,21,1],[20,2,2,3.347,0.475]]},{"id":"m193","lv":5,"a":[["N",-0.185,1.322,2],["C",0.681,0.821,1],["C",0.68,-0.179,2],["C",-0.186,-0.678,0],["C",-0.187,-1.678,1],["C",-1.053,-2.178,1],["C",-1.919,-1.677,0],["O",-2.785,-2.176,1],["C",-1.918,-0.677,1],["C",-1.052,-0.178,1],["C",1.547,1.32,0],["O",2.413,0.82,0],["O",1.548,2.32,0],["C",2.415,2.82,3]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[4,5,2,-1.052,-1.178],[5,6,1],[6,7,1],[6,8,2,-1.052,-1.178],[8,9,1],[1,10,1],[10,11,2],[10,12,1],[12,13,1],[9,3,2,-1.052,-1.178]]},{"id":"m194","lv":5,"a":[["C",-2.559,0.696,3],["C",-3.056,-0.172,0],["C",-3.559,0.693,3],["C",-3.92,-0.675,3],["N",-2.188,-0.669,1],["C",-1.324,-0.165,2],["C",-0.456,-0.662,1],["O",-0.452,-1.662,1],["C",0.408,-0.159,0],["C",0.405,0.841,1],["C",1.269,1.344,1],["C",2.137,0.847,0],["O",3.001,1.35,1],["C",2.14,-0.153,0],["C",3.008,-0.65,2],["O",3.872,-0.147,1],["C",1.276,-0.656,1]],"b":[[0,1,1],[1,2,1],[1,3,1],[1,4,1],[4,5,1],[5,6,1],[6,7,1],[6,8,1],[8,9,1],[9,10,2,1.272,0.344],[10,11,1],[11,12,1],[11,13,2,1.272,0.344],[13,14,1],[14,15,1],[13,16,1],[16,8,2,1.272,0.344]]},{"id":"m195","lv":5,"a":[["C",-3.319,-0.179,3],["N",-2.451,-0.675,1],["C",-1.587,-0.172,2],["C",-0.719,-0.669,1],["O",-0.716,-1.669,1],["C",0.145,-0.166,0],["C",1.013,-0.663,1],["C",1.877,-0.16,1],["C",1.873,0.84,0],["O",2.738,1.343,1],["C",1.006,1.337,1],["C",0.141,0.834,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,1],[3,5,1],[5,6,1],[6,7,2,1.009,0.337],[7,8,1],[8,9,1],[8,10,2,1.009,0.337],[10,11,1],[11,5,2,1.009,0.337]]},{"id":"m196","lv":5,"a":[["C",-2.6,2.498,3],["O",-1.734,1.999,0],["C",-1.733,0.999,0],["O",-2.598,0.498,0],["C",-0.866,0.499,0],["C",-0.866,-0.501,1],["C",0.001,-1.0,1],["C",0.866,-0.499,0],["C",1.733,-0.999,0],["O",2.598,-0.498,0],["O",1.734,-1.999,0],["C",2.6,-2.498,3],["C",0.866,0.501,1],["C",-0.001,1.0,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,1],[5,6,2,0.0,0.0],[6,7,1],[7,8,1],[8,9,2],[8,10,1],[10,11,1],[7,12,2,0.0,0.0],[12,13,1],[13,4,2,0.0,0.0]]},{"id":"m197","lv":5,"a":[["C",2.441,-2.776,3],["C",1.574,-2.278,2],["O",1.572,-1.278,0],["C",0.705,-0.78,0],["O",-0.16,-1.282,0],["C",0.703,0.22,0],["C",1.568,0.722,1],["C",1.566,1.722,1],["C",0.699,2.22,1],["C",-0.166,1.718,1],["C",-0.164,0.718,0],["C",-1.029,0.217,0],["O",-1.027,-0.783,0],["O",-1.896,0.715,0],["C",-2.761,0.213,2],["C",-3.628,0.712,3]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1],[5,6,2,0.701,1.22],[6,7,1],[7,8,2,0.701,1.22],[8,9,1],[9,10,2,0.701,1.22],[10,11,1],[11,12,2],[11,13,1],[13,14,1],[14,15,1],[10,5,1]]},{"id":"m198","lv":5,"a":[["C",-2.422,0.809,3],["C",-1.558,0.306,0],["O",-1.561,-0.694,0],["O",-0.69,0.802,0],["C",0.174,0.299,1],["C",1.042,0.796,2],["C",1.906,0.293,2],["C",1.903,-0.707,2],["C",1.035,-1.204,2],["C",0.171,-0.701,2]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1],[7,8,1],[8,9,1],[9,4,1]]},{"id":"m199","lv":5,"a":[["O",4.788,0.062,1],["C",3.923,-0.438,0],["O",3.923,-1.438,0],["C",3.056,0.061,2],["N",2.191,-0.439,1],["C",1.324,0.06,0],["O",1.323,1.06,0],["C",0.459,-0.441,2],["N",-0.407,0.058,1],["C",-1.273,-0.442,0],["O",-1.272,-1.442,0],["C",-2.139,0.056,0],["C",-3.005,-0.442,1],["C",-3.872,0.054,1],["C",-3.873,1.057,1],["C",-3.006,1.555,1],["C",-2.14,1.058,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,2],[5,7,1],[7,8,1],[8,9,1],[9,10,2],[9,11,1],[11,12,2,-3.006,0.556],[12,13,1],[13,14,2,-3.006,0.556],[14,15,1],[15,16,2,-3.006,0.556],[16,11,1]]},{"id":"m200","lv":5,"a":[["C",2.166,0.246,3],["C",1.299,-0.253,0],["O",1.297,-1.253,0],["O",0.434,0.249,0],["C",-0.434,-0.249,2],["C",-1.299,0.253,0],["O",-1.297,1.253,0],["O",-2.166,-0.246,1]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,2],[5,7,1]]},{"id":"m201","lv":5,"a":[["C",2.598,0.502,3],["C",1.732,0.001,0],["O",1.733,-0.999,0],["O",0.866,0.501,0],["C",-0.0,0.0,2],["C",-0.866,0.499,2],["N",-1.732,-0.001,0],["C",-2.598,0.498,3],["C",-1.731,-1.001,3]],"b":[[0,1,1],[1,2,2],[1,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1],[6,8,1]]},{"id":"m202","lv":5,"a":[["C",4.504,-0.53,3],["C",3.637,-0.03,2],["O",2.772,-0.531,0],["C",1.905,-0.032,0],["O",1.904,0.968,0],["C",1.04,-0.533,2],["N",0.173,-0.033,1],["C",-0.692,-0.534,0],["O",-0.692,-1.534,0],["C",-1.559,-0.035,0],["C",-2.424,-0.535,1],["C",-3.291,-0.036,1],["C",-3.292,0.964,1],["C",-2.426,1.465,1],["C",-1.56,0.965,1]],"b":[[0,1,1],[1,2,1],[2,3,1],[3,4,2],[3,5,1],[5,6,1],[6,7,1],[7,8,2],[7,9,1],[9,10,2,-2.425,0.465],[10,11,1],[11,12,2,-2.425,0.465],[12,13,1],[13,14,2,-2.425,0.465],[14,9,1]]},{"id":"m203","lv":5,"a":[["O",-3.462,-0.512,1],["C",-2.598,-0.009,2],["C",-1.73,-0.506,0],["O",-1.727,-1.506,0],["O",-0.866,-0.003,0],["C",0.002,-0.5,2],["C",0.866,0.003,0],["C",1.734,-0.494,1],["C",2.598,0.009,1],["C",2.594,1.009,1],["C",1.727,1.506,1],["C",0.862,1.003,1]],"b":[[0,1,1],[1,2,1],[2,3,2],[2,4,1],[4,5,1],[5,6,1],[6,7,2,1.73,0.506],[7,8,1],[8,9,2,1.73,0.506],[9,10,1],[10,11,2,1.73,0.506],[11,6,1]]}];
+
+// ENGINE START — pure functions: find functional groups from the atom/bond graph and grade answers.
+const TYPES = ['alcohol','ether','amine','aldehyde','ketone','acid','amide','aromatic','ester'];
+const NAME = {alcohol:'Alcohol',ether:'Ether',amine:'Amine',aldehyde:'Aldehyde',ketone:'Ketone',acid:'Carboxylic acid',amide:'Amide',aromatic:'Aromatic',ester:'Ester'};
+const LOWER = {alcohol:'an alcohol',ether:'an ether',amine:'an amine',aldehyde:'an aldehyde',ketone:'a ketone',acid:'a carboxylic acid',amide:'an amide',aromatic:'an aromatic ring',ester:'an ester'};
+
+function analyze(mol){
+  const A = mol.a.map((a,i)=>({i,el:a[0],x:a[1],y:a[2],h:a[3],nb:[]}));
+  for (const [i,j,o] of mol.b){ A[i].nb.push({j,o}); A[j].nb.push({j:i,o}); }
+  const G = [], req = new Set();
+  const add = (type, atoms, opt, cycle) => { G.push({type, req:atoms.slice(), opt:opt||[], cycle}); atoms.forEach(x=>req.add(x)); };
+  // 1. carbonyl carbons decide aldehyde / ketone / acid / amide / ester
+  for (const c of A){
+    if (c.el!=='C') continue;
+    const dO = c.nb.find(n=>n.o===2 && A[n.j].el==='O');
+    if (!dO) continue;
+    const rest = c.nb.filter(n=>n!==dO);
+    const o = rest.find(n=>A[n.j].el==='O'), nN = rest.find(n=>A[n.j].el==='N');
+    const hs = rest.filter(n=>A[n.j].el==='H').map(n=>n.j);
+    if (o && A[o.j].h>0) add('acid', [c.i,dO.j,o.j]);
+    else if (o) add('ester', [c.i,dO.j,o.j, A[o.j].nb.find(n=>n.j!==c.i).j]);
+    else if (nN) add('amide', [c.i,dO.j,nN.j]);
+    else if (c.h + hs.length > 0) add('aldehyde', [c.i,dO.j,...hs]);
+    else add('ketone', [c.i,dO.j]);
+  }
+  // 2. remaining O and N
+  for (const a of A){
+    if (req.has(a.i)) continue;
+    const cs = a.nb.filter(n=>A[n.j].el==='C').length;
+    if (a.el==='O' && a.h===1 && cs===1) add('alcohol',[a.i]);
+    else if (a.el==='O' && a.h===0 && cs===2) add('ether',[a.i]);
+    else if (a.el==='N') add('amine',[a.i]);
+  }
+  // 3. benzene rings
+  for (const ring of benzeneRings(A)) add('aromatic', ring, [], ring);
+  // 4. carbons bonded to a group's O/N are optional, unless another group needs them
+  for (const g of G){
+    if (g.type==='aromatic' || g.type==='ketone' || g.type==='aldehyde') continue;
+    for (const x of g.req) if (A[x].el!=='C') for (const n of A[x].nb){
+      const y = n.j;
+      if (A[y].el==='C' && !g.req.includes(y) && !req.has(y) && !g.opt.includes(y)) g.opt.push(y);
+    }
+  }
+  for (const g of G) g.req.sort((a,b)=>a-b);
+  return {A, G};
+}
+
+function benzeneRings(A){
+  const out = [], seen = new Set();
+  const order = (i,j) => A[i].nb.find(n=>n.j===j).o;
+  const alternates = p => { const os = p.map((v,k)=>order(v,p[(k+1)%6])); return os.every((o,k)=>o+os[(k+1)%6]===3); };
+  for (const s of A){
+    if (s.el!=='C') continue;
+    const path = [s.i];
+    const dfs = u => {
+      if (path.length===6){
+        if (A[u].nb.some(n=>n.j===s.i)){
+          const key = [...path].sort((a,b)=>a-b).join();
+          if (!seen.has(key) && alternates(path)){ seen.add(key); out.push([...path]); }
+        }
+        return;
+      }
+      for (const n of A[u].nb){
+        const v = n.j;
+        if (A[v].el!=='C' || v<s.i || path.includes(v)) continue;
+        path.push(v); dfs(v); path.pop();
+      }
+    };
+    dfs(s.i);
+  }
+  return out;
+}
+
+function isPhenol(info, g){
+  const c = info.A[g.req[0]].nb[0].j;
+  return info.G.some(h=>h.type==='aromatic' && h.req.includes(c));
+}
+function why(info, g){
+  switch (g.type){
+    case 'alcohol': return isPhenol(info,g)
+      ? 'An O–H bonded to a benzene-ring carbon (a phenol). At this level we count it as an <b>alcohol</b>.'
+      : 'An O–H bonded to a carbon that has no C=O.';
+    case 'ether': return 'An O bonded to two carbons, with no H, and neither carbon has a C=O.';
+    case 'amine': return 'A nitrogen bonded only to carbons and hydrogens, with no C=O carbon attached.';
+    case 'aldehyde': return 'A C=O whose carbon is bonded to an H (–CHO).';
+    case 'ketone': return 'A C=O whose carbon is bonded to two other carbons.';
+    case 'acid': return 'A C=O whose carbon also carries an O–H (–COOH).';
+    case 'amide': return 'A C=O whose carbon is bonded directly to a nitrogen.';
+    case 'aromatic': return 'A benzene ring: six carbons in a ring with alternating double bonds.';
+    case 'ester': return 'A C=O whose carbon is bonded to an O that leads to another carbon (–COO–C).';
+  }
+}
+const PAIR = {
+  'alcohol>acid':'That O–H is attached to a C=O carbon, so it is part of a <b>carboxylic acid</b>, not an alcohol.',
+  'ketone>acid':'That C=O carbon also has an O–H on it. Together they make a <b>carboxylic acid</b>.',
+  'aldehyde>acid':'That C=O carbon has an O–H on it, not an H. Together they make a <b>carboxylic acid</b>.',
+  'ether>acid':'That O has an H and sits on a C=O carbon, so it is part of a <b>carboxylic acid</b>.',
+  'ketone>aldehyde':'That C=O carbon is bonded to an H, which makes it an <b>aldehyde</b>. In a ketone the C=O carbon is bonded to two carbons.',
+  'aldehyde>ketone':'That C=O carbon is bonded to two carbons and has no H, so it is a <b>ketone</b>.',
+  'acid>ketone':'There is no O–H on this C=O carbon. It is bonded to two carbons, so it is a <b>ketone</b>.',
+  'acid>aldehyde':'There is no O–H on this C=O carbon. It has an H, so it is an <b>aldehyde</b>.',
+  'amide>ketone':'No nitrogen is attached to this C=O carbon. It is bonded to two carbons, so it is a <b>ketone</b>.',
+  'amide>aldehyde':'No nitrogen is attached to this C=O carbon. It has an H, so it is an <b>aldehyde</b>.',
+  'amine>amide':'That N is bonded directly to a C=O carbon, which makes it part of an <b>amide</b>, not an amine.',
+  'ketone>amide':'That C=O carbon is bonded to a nitrogen, so it is part of an <b>amide</b>.',
+  'aldehyde>amide':'That C=O carbon is bonded to a nitrogen, so it is part of an <b>amide</b>.',
+  'acid>amide':'The C=O carbon is bonded to an N, not an O–H, so this is an <b>amide</b>.',
+  'amide>amine':'That N is not bonded to a C=O carbon, so it is an <b>amine</b>. An amide needs the N attached right to the C=O carbon.',
+  'alcohol>ether':'This O has no H. It is bonded to two carbons, so it is an <b>ether</b>.',
+  'ether>alcohol':'This O has an H on it (O–H), so it is an <b>alcohol</b>, not an ether.',
+  'acid>alcohol':'This O–H is not on a C=O carbon, so it is an <b>alcohol</b>. A carboxylic acid needs the O–H on the C=O carbon.',
+  'ether>ester':'This O is bonded to a C=O carbon, so it is part of an <b>ester</b>, not an ether.',
+  'alcohol>ester':'This O has no H, and it is bonded to a C=O carbon, so it is part of an <b>ester</b>.',
+  'ketone>ester':'That C=O carbon is also bonded to an O that leads to another carbon, so this is an <b>ester</b>.',
+  'aldehyde>ester':'That C=O carbon is also bonded to an O that leads to another carbon, so this is an <b>ester</b>.',
+  'acid>ester':'The single-bonded O has a carbon on it, not an H, so this is an <b>ester</b>, not a carboxylic acid.',
+  'ester>acid':'The single-bonded O has an H (O–H), so this is a <b>carboxylic acid</b>, not an ester.',
+  'ester>ether':'This O is bonded to two carbons and neither has a C=O, so it is an <b>ether</b>.',
+  'amine>aromatic':'Those atoms are carbons in a benzene ring, so they form an <b>aromatic</b> ring.',
+  'alcohol>aromatic':'Those atoms are carbons in a benzene ring, so they form an <b>aromatic</b> ring.',
+};
+const MISSING = {
+  acid:'Yes, it’s a carboxylic acid. Now select the whole –COOH: the C=O carbon, its O, <b>and</b> the O–H.',
+  ester:'Yes, it’s an ester. Select the C=O carbon, its O, the single-bonded O, <b>and</b> the carbon attached to that O.',
+  amide:'Yes, it’s an amide. Select the C=O carbon, its O, <b>and</b> the N.',
+  aldehyde:'Yes, it’s an aldehyde. Select the C=O carbon, its O, <b>and</b> the H on that carbon.',
+  ketone:'Yes, it’s a ketone. Select both the C=O carbon and its O.',
+  aromatic:'Yes, it’s an aromatic ring. Select all six carbons of the ring.',
+};
+const EXTRA = {
+  alcohol:'Select just the O–H. You may include the carbon it’s on, but nothing more.',
+  ether:'Select just the O. You may include the carbons on either side of it, but nothing more.',
+  amine:'Select just the N (and its H’s). You may include the carbons bonded to it, but nothing more.',
+  amide:'An amide is the C=O carbon, its O, and the N. Carbons on the N are optional; nothing else belongs.',
+  acid:'A carboxylic acid is just –COOH: the C=O carbon, its O, and the O–H.',
+  ester:'An ester is the C=O carbon, its O, the single-bonded O, and the carbon attached to that O. Nothing else belongs.',
+  aldehyde:'An aldehyde is the C=O carbon, its O, and its H. The carbon chain is not part of it.',
+  ketone:'A ketone is just the C=O carbon and its O. The carbons on either side are not part of it.',
+  aromatic:'An aromatic ring is just the six ring carbons. Leave out the atoms attached to the ring.',
+};
+const FOCUS = {alcohol:'O–H',ether:'O',amine:'N',amide:'C=O and N',acid:'–COOH'};
+
+function evaluate(info, sel, label, found){
+  const {A, G} = info, S = [...sel];
+  const owners = x => G.filter(g=>g.req.includes(x)).length;
+  let touched = G.map((g,k)=>k).filter(k=>G[k].req.some(x=>sel.has(x) && owners(x)===1));
+  if (!touched.length) touched = G.map((g,k)=>k).filter(k=>G[k].req.some(x=>sel.has(x)));
+  if (!touched.length){
+    const holder = G.find(g=>S.every(x=>g.opt.includes(x)));
+    if (holder) return {kind:'near', msg:`That carbon holds ${LOWER[holder.type]}, but the group itself is the ${FOCUS[holder.type]}. Select that instead.`};
+    return {kind:'wrong', msg:'Those atoms aren’t one of our functional groups. They’re just part of the carbon skeleton. Look for O, N, a C=O, or a benzene ring.'};
+  }
+  if (touched.length > 1){
+    const main = touched.find(k=>G[k].type===label && G[k].req.every(x=>sel.has(x)) && !found.has(k));
+    if (main !== undefined){
+      const g = G[main], stray = S.filter(x=>!g.req.includes(x) && !g.opt.includes(x));
+      const holders = stray.every(x=>A[x].el==='C' && g.req.some(r=>A[r].el!=='C' && A[r].nb.some(n=>n.j===x)));
+      if (holders){
+        const other = [...new Set(touched.filter(k=>k!==main).map(k=>G[k].type==='aromatic' ? 'aromatic ring' : NAME[G[k].type].toLowerCase()))].join(' / ');
+        return {kind:'near', msg:`Right group! But the carbon it’s attached to belongs to the <b>${other}</b>, so leave that carbon out and select just the ${FOCUS[g.type]||'group'}.`};
+      }
+    }
+    const names = [...new Set(touched.map(k=>LOWER[G[k].type]))];
+    const list = names.length>1 ? names.join(' and ') : `two separate ${NAME[G[touched[0]].type].toLowerCase()} groups`;
+    return {kind:'near', msg:`Your selection includes atoms from more than one group (${list}). Select one group at a time.`};
+  }
+  const k = touched[0], g = G[k];
+  if (found.has(k)) return {kind:'near', k, msg:`You’ve already found that ${NAME[g.type].toLowerCase()}. Look for another group.`};
+  if (g.type !== label){
+    // only the carbon(s) holding an O/N group of the chosen type were selected
+    const held = G.find((h,j)=>h.type===label && !found.has(j) && FOCUS[label] && S.every(x=>A[x].el==='C' && h.req.some(r=>A[r].el!=='C' && A[r].nb.some(n=>n.j===x))));
+    if (held) return {kind:'near', msg:`That carbon holds ${LOWER[label]}, but the group itself is the ${FOCUS[label]}. Select that instead.`};
+    const p = PAIR[label+'>'+g.type];
+    return {kind:'wrong', k, msg: p || `Not ${LOWER[label]}. These atoms are part of <b>${LOWER[g.type]}</b>: ${why(info,g)}`};
+  }
+  if (g.req.some(x=>!sel.has(x))) return {kind:'near', k, msg:MISSING[g.type] || 'Select all of the group’s atoms.'};
+  if (S.some(x=>!g.req.includes(x) && !g.opt.includes(x))) return {kind:'near', k, msg:'Right group, but you selected extra atoms. ' + EXTRA[g.type]};
+  return {kind:'correct', k, msg:why(info,g)};
+}
+// ENGINE END
+
+/* ---------------- storage ---------------- */
+const STORE_KEY = 'fgfinder.v1';
+const blankStats = () => ({g:Object.fromEntries(TYPES.map(t=>[t,{r:0,m:0}])), bestC:0, bestQ:0, cleared:{}, badges:[], perfect:0, l5:0, bestStreak:0});
+let stats = blankStats();
+try { const s = JSON.parse(localStorage.getItem(STORE_KEY)); if (s && s.g) stats = Object.assign(blankStats(), s, {g:Object.assign(blankStats().g, s.g)}); } catch(e){}
+const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(stats)); } catch(e){} };
+
+/* ---------------- constants ---------------- */
+const LEVELS = {1:'One simple group',2:'Rings, branches & repeats',3:'Two different groups',4:'Three or more groups, with look-alikes',5:'Challenge: bigger molecules, esters added'};
+const CORE = TYPES.filter(t=>t!=='ester');
+const BADGES = [
+  {id:'first', icon:'🔍', name:'First Find', desc:'Identify your first group', test:()=>total()>=1},
+  {id:'flawless', icon:'💎', name:'Flawless', desc:'Finish 10 molecules with no mistakes', test:()=>stats.perfect>=10},
+  {id:'streak10', icon:'🔥', name:'On Fire', desc:'Reach a 10-group streak', test:()=>stats.bestStreak>=10},
+  {id:'acid', icon:'🧪', name:'Acid Test', desc:'Find 15 carboxylic acids', test:()=>stats.g.acid.r>=15},
+  {id:'ring', icon:'⬡', name:'Ring Leader', desc:'Find 15 aromatic rings', test:()=>stats.g.aromatic.r>=15},
+  {id:'nitro', icon:'🧭', name:'N-spector', desc:'Find 10 amines and 10 amides', test:()=>stats.g.amine.r>=10&&stats.g.amide.r>=10},
+  {id:'carbonyl', icon:'🎯', name:'Carbonyl Sorter', desc:'Find 5 each: aldehyde, ketone, acid, amide', test:()=>['aldehyde','ketone','acid','amide'].every(t=>stats.g[t].r>=5)},
+  {id:'all8', icon:'🌈', name:'Full Spectrum', desc:'Find every one of the 8 core groups', test:()=>CORE.every(t=>stats.g[t].r>=1)},
+  {id:'l5', icon:'🏔️', name:'Summit', desc:'Complete 5 Level 5 molecules', test:()=>stats.l5>=5},
+  {id:'quick', icon:'⚡', name:'Quick Draw', desc:'Score 20+ in Quick Fire', test:()=>stats.bestQ>=20},
+  {id:'high', icon:'🏆', name:'High Scorer', desc:'Score 5,000+ in Challenge', test:()=>stats.bestC>=5000},
+  {id:'century', icon:'💯', name:'Centurion', desc:'Identify 100 groups in total', test:()=>total()>=100},
+];
+const total = () => TYPES.reduce((s,t)=>s+stats.g[t].r,0);
+
+/* ---------------- state ---------------- */
+const $ = id => document.getElementById(id);
+const svg = $('mol');
+const INFO = MOLS.map(analyze);
+const S = {mode:'practice', level:1, idx:0, sel:new Set(), found:new Set(), hinted:new Set(), mistakes:0, score:0, streak:0,
+  revealed:false, done:false, running:false, timeLeft:0, timeTotal:0, paused:false, qTarget:null, qCorrect:0, qWrong:0,
+  cStats:{right:0,wrong:0}, studyPick:null, hint:null};
+const decks = {};
+function drawFrom(level){
+  if (!decks[level] || !decks[level].length){
+    const ids = MOLS.map((m,i)=>i).filter(i=>MOLS[i].lv===level);
+    for (let i=ids.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [ids[i],ids[j]]=[ids[j],ids[i]]; }
+    if (decks[level+'last']!==undefined && ids[ids.length-1]===decks[level+'last']) ids.unshift(ids.pop());
+    decks[level] = ids;
+  }
+  const i = decks[level].pop(); decks[level+'last'] = i; return i;
+}
+
+/* ---------------- molecule drawing ---------------- */
+let view = null, HPOS = {};
+const gUnder = () => svg.querySelector('#under'), gOver = () => svg.querySelector('#over');
+const fmt = n => Math.round(n*1000)/1000;
+
+function hDir(a, A){
+  if (!a.h) return null;
+  const vs = a.nb.map(n=>Math.atan2(A[n.j].y-a.y, A[n.j].x-a.x));
+  const cands = [['right',0],['left',Math.PI],['down',Math.PI/2],['up',-Math.PI/2]];
+  let best=null, bestScore=-1;
+  for (const [name,ang] of cands){
+    const sc = vs.length ? Math.min(...vs.map(v=>{let d=Math.abs(v-ang)%(2*Math.PI); return d>Math.PI?2*Math.PI-d:d;})) : 9;
+    if (sc > bestScore + 0.25) { best=name; bestScore=sc; }
+  }
+  return best;
+}
+
+function drawMolecule(){
+  const info = INFO[S.idx], {A} = info, mol = MOLS[S.idx];
+  const xs = A.map(a=>a.x), ys = A.map(a=>a.y);
+  let x0=Math.min(...xs)-1.35, x1=Math.max(...xs)+1.35, y0=Math.min(...ys)-1.25, y1=Math.max(...ys)+1.25;
+  const minW=11, minH=7;
+  if (x1-x0<minW){ const c=(x0+x1)/2; x0=c-minW/2; x1=c+minW/2; }
+  if (y1-y0<minH){ const c=(y0+y1)/2; y0=c-minH/2; y1=c+minH/2; }
+  // leave room for the stage's top pills and bottom hint
+  const pad = (y1-y0)*0.08; y0-=pad; y1+=pad*0.6;
+  view = {x0,y0,w:x1-x0,h:y1-y0};
+  svg.setAttribute('viewBox', `${fmt(x0)} ${fmt(y0)} ${fmt(x1-x0)} ${fmt(y1-y0)}`);
+  const labelled = a => a.el!=='C';
+  let bonds = '';
+  for (const b of mol.b){
+    const [i,j,o] = b, p=A[i], q=A[j];
+    let dx=q.x-p.x, dy=q.y-p.y; const L=Math.hypot(dx,dy); dx/=L; dy/=L;
+    const s1 = labelled(p)?0.3:0, s2 = labelled(q)?0.3:0;
+    let ax=p.x+dx*s1, ay=p.y+dy*s1, bx=q.x-dx*s2, by=q.y-dy*s2;
+    const nx=-dy, ny=dx;
+    if (o===1) bonds += line(ax,ay,bx,by);
+    else if (b.length>3){ // ring double bond: second line inside the ring
+      const cx=b[3], cy=b[4], side = ((cx-p.x)*nx + (cy-p.y)*ny) > 0 ? 1 : -1, off=0.19*side, sh=0.17;
+      bonds += line(ax,ay,bx,by) + line(ax+nx*off+dx*sh, ay+ny*off+dy*sh, bx+nx*off-dx*sh, by+ny*off-dy*sh);
+    } else {
+      const off=0.085;
+      bonds += line(ax+nx*off,ay+ny*off,bx+nx*off,by+ny*off) + line(ax-nx*off,ay-ny*off,bx-nx*off,by-ny*off);
+    }
+  }
+  let labels = '';
+  HPOS = {};
+  for (const a of A){
+    if (!labelled(a)) continue;
+    const col = a.el==='O'?'var(--O)':a.el==='N'?'var(--N)':'var(--H)';
+    labels += `<text class="atom-label" x="${fmt(a.x)}" y="${fmt(a.y)}" font-size=".5" fill="${col}">${a.el}</text>`;
+    const d = hDir(a, A);
+    if (d){
+      const two = a.h>1;
+      let hx=a.x, hy=a.y;
+      if (d==='right') hx += 0.42; else if (d==='left') hx -= two?0.62:0.42; else if (d==='up') hy -= 0.5; else hy += 0.5;
+      labels += `<text class="atom-label" x="${fmt(hx)}" y="${fmt(hy)}" font-size=".5" fill="${col}">H</text>`;
+      HPOS[a.i] = [two && d==='right' ? hx+0.08 : hx, hy];
+      if (two) labels += `<text class="atom-label" x="${fmt(hx+0.25)}" y="${fmt(hy+0.15)}" font-size=".32" fill="${col}">${a.h}</text>`;
+    }
+  }
+  svg.innerHTML = `<g id="under"></g><g>${bonds}</g><g>${labels}</g><g id="over"></g><path id="lasso" d=""/>`;
+  function line(x1,y1,x2,y2){ return `<line class="bond" x1="${fmt(x1)}" y1="${fmt(y1)}" x2="${fmt(x2)}" y2="${fmt(y2)}"/>`; }
+}
+
+function blob(info, atoms, color, cls='', ring){
+  const {A} = info, set = new Set(atoms);
+  let s = `<g class="${cls}" fill="${color}" stroke="${color}" opacity=".28">`;
+  if (ring) s += `<polygon points="${ring.map(i=>fmt(A[i].x)+','+fmt(A[i].y)).join(' ')}" stroke-width=".72" stroke-linejoin="round"/>`;
+  for (const b of MOLS[S.idx].b) if (set.has(b[0]) && set.has(b[1]))
+    s += `<line x1="${fmt(A[b[0]].x)}" y1="${fmt(A[b[0]].y)}" x2="${fmt(A[b[1]].x)}" y2="${fmt(A[b[1]].y)}" stroke-width=".72" stroke-linecap="round"/>`;
+  for (const i of atoms){
+    s += `<circle cx="${fmt(A[i].x)}" cy="${fmt(A[i].y)}" r="${A[i].el==='C'?0.36:0.42}" stroke="none"/>`;
+    if (HPOS[i]) s += `<line x1="${fmt(A[i].x)}" y1="${fmt(A[i].y)}" x2="${fmt(HPOS[i][0])}" y2="${fmt(HPOS[i][1])}" stroke-width=".84" stroke-linecap="round"/>`;
+  }
+  return s + '</g>';
+}
+function tag(info, g, color, placed, fresh){
+  const {A} = info;
+  const cx = g.req.reduce((s,i)=>s+A[i].x,0)/g.req.length, cy = g.req.reduce((s,i)=>s+A[i].y,0)/g.req.length;
+  const text = NAME[g.type], w = text.length*0.19 + 0.4, h = 0.44;
+  // obstacles: atoms, H labels and bond midpoints; pick the emptiest nearby spot
+  const pts = A.map(a=>[a.x,a.y]).concat(Object.values(HPOS));
+  for (const b of MOLS[S.idx].b) pts.push([(A[b[0]].x+A[b[1]].x)/2, (A[b[0]].y+A[b[1]].y)/2]);
+  const rectDist = (x,y,px,py) => Math.hypot(Math.max(Math.abs(px-x)-w/2,0), Math.max(Math.abs(py-y)-h/2,0));
+  let best = null;
+  const cands = [];
+  if (g.type==='aromatic') for (const d of [0, 0.25, 0.5]) for (let k=0;k<4;k++) cands.push([cx+Math.cos(k*Math.PI/2+Math.PI/4)*d, cy+Math.sin(k*Math.PI/2+Math.PI/4)*d, d-2]);
+  else for (const d of [0.9, 1.25, 1.65]) for (let k=0;k<16;k++){ const t=k*Math.PI/8; cands.push([cx+Math.cos(t)*d*(1+w/3), cy+Math.sin(t)*d, d]); }
+  for (const [x,y,d] of cands){
+    let sc = Math.min(0.32, ...pts.map(p=>rectDist(x,y,p[0],p[1])));
+    for (const r of placed) if (Math.abs(r[0]-x) < (r[2]+w)/2+0.1 && Math.abs(r[1]-y) < h+0.1) sc -= 2;
+    if (x-w/2 < view.x0 || x+w/2 > view.x0+view.w || y-h < view.y0 || y+h > view.y0+view.h) sc -= 1;
+    sc -= d*0.12;
+    if (!best || sc > best[3]) best = [x,y,d,sc];
+  }
+  const tx = best[0], ty = best[1];
+  placed.push([tx,ty,w]);
+  return `<g class="tag ${fresh?'halo-in':''}" pointer-events="none"><rect x="${fmt(tx-w/2)}" y="${fmt(ty-0.22)}" width="${fmt(w)}" height=".44" rx=".22" fill="${color}"/><text x="${fmt(tx)}" y="${fmt(ty+0.01)}" font-size=".3">${text}</text></g>`;
+}
+const gcol = t => `var(--g-${t})`;
+
+function drawDynamic(){
+  if (!view) return;
+  const info = INFO[S.idx], {A, G} = info;
+  let under = '', over = '';
+  const placed = [];
+  G.forEach((g,k)=>{
+    const show = S.found.has(k) || S.revealed || S.mode==='study';
+    if (show) under += blob(info, g.req, gcol(g.type), k===S.justFound?'halo-in':'', g.cycle);
+    if (show && (S.mode!=='study' || S.studyPick===null || S.studyPick===k)) over += tag(info, g, gcol(g.type), placed, k===S.justFound);
+  });
+  if (S.mode==='quick' && S.qTarget!==null){
+    const qg = G[S.qTarget];
+    under += blob(info, qg.req, 'var(--accent)', 'target', G[S.qTarget].cycle).replace('opacity=".28"','opacity=".35"');
+  }
+  if (S.mode==='study' && S.studyPick!==null){
+    const g = G[S.studyPick];
+    under += blob(info, g.req, gcol(g.type), '', g.cycle);
+  }
+  // selection
+  if (S.sel.size){
+    for (const b of MOLS[S.idx].b) if (S.sel.has(b[0]) && S.sel.has(b[1]))
+      under += `<line class="sel-bond" x1="${fmt(A[b[0]].x)}" y1="${fmt(A[b[0]].y)}" x2="${fmt(A[b[1]].x)}" y2="${fmt(A[b[1]].y)}"/>`;
+    for (const i of S.sel) under += HPOS[i]
+      ? (()=>{ const r=0.38, x0=Math.min(A[i].x,HPOS[i][0])-r, y0=Math.min(A[i].y,HPOS[i][1])-r, w=Math.abs(A[i].x-HPOS[i][0])+2*r, h=Math.abs(A[i].y-HPOS[i][1])+2*r;
+          return `<rect class="sel-dot" x="${fmt(x0)}" y="${fmt(y0)}" width="${fmt(w)}" height="${fmt(h)}" rx="${r}"/>`; })()
+      : `<circle class="sel-dot" cx="${fmt(A[i].x)}" cy="${fmt(A[i].y)}" r="${A[i].el==='C'?0.3:0.38}"/>`;
+  }
+  if (S.hint!==null && !S.found.has(S.hint)){
+    for (const i of G[S.hint].req) over += `<circle class="hintring" cx="${fmt(A[i].x)}" cy="${fmt(A[i].y)}" r=".48"/>`;
+  }
+  gUnder().innerHTML = under; gOver().innerHTML = over;
+  S.justFound = null;
+  // found pips
+  const pips = $('pips');
+  if (S.mode==='quick'){ $('foundPill').style.visibility='hidden'; return; }
+  $('foundPill').style.visibility='visible';
+  $('foundText').textContent = S.mode==='study' ? `${G.length} group${G.length>1?'s':''}` : `Found ${S.found.size} of ${G.length}`;
+  pips.innerHTML = G.map((g,k)=>{ const on = S.found.has(k) || S.mode==='study' || S.revealed; return `<span class="pip ${on?'on':''}" style="${on?`background:${gcol(g.type)}`:''}"></span>`; }).join('');
+}
+
+/* ---------------- pointer: select atoms ---------------- */
+function toSvg(e){
+  const pt = svg.createSVGPoint(); pt.x=e.clientX; pt.y=e.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function nearest(p, r){
+  const {A} = INFO[S.idx]; let best=null, bd=r;
+  for (const a of A){
+    let d = Math.hypot(a.x-p.x, a.y-p.y);
+    if (HPOS[a.i]) d = Math.min(d, Math.hypot(HPOS[a.i][0]-p.x, HPOS[a.i][1]-p.y));
+    if (d<bd){ bd=d; best=a.i; }
+  }
+  return best;
+}
+function pointInPoly(p, poly){
+  let inside=false;
+  for (let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const a=poly[i], b=poly[j];
+    if ((a.y>p.y)!==(b.y>p.y) && p.x < (b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x) inside=!inside;
+  }
+  return inside;
+}
+let drag = null;
+const canSelect = () => (S.mode==='practice' || (S.mode==='challenge' && S.running)) && !S.done && !S.revealed;
+svg.addEventListener('pointerdown', e=>{
+  const p = toSvg(e);
+  if (S.mode==='study'){
+    const a = nearest(p, 0.5); const G = INFO[S.idx].G;
+    const k = a===null ? -1 : G.findIndex(g=>g.req.includes(a));
+    S.studyPick = k>=0 ? k : null; showStudyInfo(); drawDynamic(); return;
+  }
+  if (!canSelect()) return;
+  try { svg.setPointerCapture(e.pointerId); } catch(err){}
+  const a = nearest(p, 0.48);
+  if (a!==null){ drag={type:'paint', add:!S.sel.has(a), moved:false}; paint(a); }
+  else drag={type:'lasso', pts:[p]};
+});
+svg.addEventListener('pointermove', e=>{
+  if (!drag) return;
+  const p = toSvg(e);
+  if (drag.type==='paint'){ const a = nearest(p, 0.42); if (a!==null) paint(a); }
+  else { drag.pts.push(p); $('lasso').setAttribute('d', 'M'+drag.pts.map(q=>fmt(q.x)+' '+fmt(q.y)).join('L')+'Z'); }
+});
+const endDrag = () => {
+  if (!drag) return;
+  if (drag.type==='lasso'){
+    const pts = drag.pts; let len=0;
+    for (let i=1;i<pts.length;i++) len += Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y);
+    if (len < 0.4) S.sel.clear();
+    else for (const a of INFO[S.idx].A) if (pointInPoly(a, pts)) S.sel.add(a.i);
+    $('lasso').setAttribute('d','');
+    drawDynamic(); updateChips();
+  }
+  drag = null;
+};
+window.addEventListener('pointerup', endDrag);
+window.addEventListener('pointercancel', endDrag);
+function paint(a){
+  const had = S.sel.has(a);
+  if (drag.add && !had) S.sel.add(a); else if (!drag.add && had) S.sel.delete(a); else return;
+  drawDynamic(); updateChips();
+}
+
+/* ---------------- chips (tap or drag onto molecule) ---------------- */
+function buildChips(){
+  const showEster = S.mode==='challenge' || (S.mode==='practice' && S.level===5) || S.mode==='study';
+  const list = showEster ? TYPES : CORE;
+  $('chips').innerHTML = list.map((t,i)=>`<button class="chip ${list.length%2 && i===list.length-1?'wide':''}" data-type="${t}" style="--c:${gcol(t)}"><i></i>${NAME[t]}<kbd>${i+1}</kbd></button>`).join('');
+  $('bankNote').textContent = showEster && S.mode!=='study' ? 'Ester included' : '';
+  updateChips();
+}
+function updateChips(){
+  const ready = S.mode==='quick' || S.sel.size>0;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('ready', ready));
+  const c = $('clearBtn'); if (c) c.disabled = !S.sel.size || (S.mode==='challenge' && !S.running);
+}
+let chipDrag = null, suppressClick = false;
+$('chips').addEventListener('pointerdown', e=>{
+  const chip = e.target.closest('.chip'); if (!chip) return;
+  chipDrag = {chip, x:e.clientX, y:e.clientY, ghost:null, id:e.pointerId};
+});
+window.addEventListener('pointermove', e=>{
+  if (!chipDrag) return;
+  if (!chipDrag.ghost && Math.hypot(e.clientX-chipDrag.x, e.clientY-chipDrag.y) > 12){
+    const g = chipDrag.chip.cloneNode(true); g.classList.add('ghost'); g.style.width = chipDrag.chip.offsetWidth+'px';
+    document.body.appendChild(g); chipDrag.ghost = g;
+  }
+  if (chipDrag.ghost){ chipDrag.ghost.style.left=e.clientX+'px'; chipDrag.ghost.style.top=e.clientY+'px'; }
+});
+// dragging a name onto the molecule submits it; a plain tap is handled by 'click'
+window.addEventListener('pointerup', e=>{
+  if (!chipDrag) return;
+  const {chip, ghost} = chipDrag; chipDrag = null;
+  if (!ghost) return;
+  ghost.remove(); suppressClick = true; setTimeout(()=>suppressClick=false, 50);
+  const r = $('stage').getBoundingClientRect();
+  if (e.clientX>=r.left && e.clientX<=r.right && e.clientY>=r.top && e.clientY<=r.bottom) answer(chip.dataset.type, chip);
+});
+window.addEventListener('pointercancel', ()=>{ if (chipDrag && chipDrag.ghost) chipDrag.ghost.remove(); chipDrag=null; });
+$('chips').addEventListener('click', e=>{
+  const chip = e.target.closest('.chip'); if (!chip) return;
+  if (suppressClick){ suppressClick = false; return; }
+  answer(chip.dataset.type, chip);
+});
+
+/* ---------------- feedback ---------------- */
+function feedback(kind, title, body){
+  const f = $('feedback');
+  f.className = 'card box feedback ' + (kind||'');
+  const icon = {good:'✓', near:'◐', bad:'✕'}[kind] || '';
+  f.innerHTML = `<div class="fb-title">${icon?`<span>${icon}</span>`:''}${title}</div><div class="fb-body">${body||''}</div>`;
+  void f.offsetWidth; f.classList.add('pop');
+}
+function floatText(text, el, color){
+  const r = (el||$('stage')).getBoundingClientRect();
+  const d = document.createElement('div'); d.className='float'; d.textContent=text;
+  if (color) d.style.color = color;
+  d.style.left = (r.left + r.width/2 - 20)+'px'; d.style.top = (r.top - 6)+'px';
+  document.body.appendChild(d); setTimeout(()=>d.remove(), 1000);
+}
+function toast(text){ const t=document.createElement('div'); t.className='toast'; t.textContent=text; document.body.appendChild(t); setTimeout(()=>t.remove(),3300); }
+function shake(){ const s=$('stage'); s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake'); }
+const mult = () => Math.min(4, 1 + Math.floor(S.streak/3));
+
+function checkBadges(){
+  for (const b of BADGES) if (!stats.badges.includes(b.id) && b.test()){ stats.badges.push(b.id); toast(`${b.icon}  Badge earned: ${b.name}`); }
+  save();
+}
+
+/* ---------------- answering ---------------- */
+function answer(type, chipEl){
+  if (S.mode==='quick') return quickAnswer(type, chipEl);
+  if (S.mode==='study'){ const k = INFO[S.idx].G.findIndex(g=>g.type===type); S.studyPick = k>=0?k:null; showStudyInfo(type); drawDynamic(); return; }
+  if (!canSelect()) return;
+  if (!S.sel.size){ feedback('', 'Select atoms first', 'Tap or drag across the atoms of one group, then pick its name.'); return; }
+  const info = INFO[S.idx], res = evaluate(info, S.sel, type, S.found);
+  if (res.kind==='correct'){
+    const g = info.G[res.k];
+    S.found.add(res.k); S.justFound = res.k; S.sel.clear(); S.streak++;
+    stats.bestStreak = Math.max(stats.bestStreak, S.streak);
+    const pts = Math.round(100 * mult() * (S.hinted.has(res.k)?0.5:1));
+    S.score += pts; S.cStats.right++;
+    stats.g[g.type].r++;
+    if (S.hint===res.k) S.hint=null;
+    floatText('+'+pts, chipEl, gcol(g.type));
+    feedback('good', `${NAME[g.type]}!`, res.msg);
+    if (S.found.size === info.G.length) moleculeDone();
+  } else if (res.kind==='wrong'){
+    S.streak = 0; S.mistakes++; S.cStats.wrong++;
+    if (res.k!==undefined) stats.g[info.G[res.k].type].m++;
+    shake();
+    feedback('bad', `Not ${LOWER[type]}`, res.msg);
+  } else {
+    feedback('near', 'Almost', res.msg);
+  }
+  checkBadges(); drawDynamic(); updateChips(); renderStatus(); renderActions();
+}
+
+function moleculeDone(){
+  S.done = true;
+  const perfect = S.mistakes===0 && S.hinted.size===0;
+  if (perfect){ S.score += 50; stats.perfect++; setTimeout(()=>floatText('Perfect! +50', $('foundPill'), 'var(--accent)'), 350); }
+  const lv = MOLS[S.idx].lv, id = MOLS[S.idx].id;
+  stats.cleared[lv] = stats.cleared[lv] || [];
+  if (!stats.cleared[lv].includes(id)) stats.cleared[lv].push(id);
+  if (lv===5) stats.l5++;
+  if (S.mode==='challenge') S.cDone++;
+  const G = INFO[S.idx].G;
+  const sum = `<ul>${G.map(g=>`<li><b style="color:${gcol(g.type)}">${NAME[g.type]}</b>: ${why(INFO[S.idx],g)}</li>`).join('')}</ul>`;
+  feedback('good', perfect ? 'Molecule complete: perfect!' : 'Molecule complete!', G.length>1 ? sum : $('feedback').querySelector('.fb-body').innerHTML);
+  if (S.mode==='challenge') setTimeout(()=>{ if (S.running && S.done) nextMolecule(); }, 1100);
+}
+
+/* ---------------- modes ---------------- */
+function loadMolecule(i){
+  S.idx=i; S.sel.clear(); S.found.clear(); S.hinted.clear(); S.hint=null; S.mistakes=0; S.revealed=false; S.done=false; S.studyPick=null;
+  drawMolecule(); drawDynamic(); updateChips();
+  $('levelPill').textContent = `Level ${MOLS[i].lv}`;
+}
+const CH_SEQ = [1,1,2,2,3,3,4,4,5];
+function nextMolecule(){
+  if (S.mode==='practice' || S.mode==='study') loadMolecule(drawFrom(S.level));
+  else if (S.mode==='challenge'){ S.cIndex++; loadMolecule(drawFrom(CH_SEQ[Math.min(S.cIndex, CH_SEQ.length-1)])); }
+  if (S.mode==='practice') feedback('', 'Find every functional group', `This molecule has <b>${INFO[S.idx].G.length}</b> group${INFO[S.idx].G.length>1?'s':''}. Select one group’s atoms, then name it.`);
+  if (S.mode==='challenge') feedback('', 'Keep going!', 'Find every group to move on. Streaks multiply your points.');
+  if (S.mode==='study') showStudyInfo();
+  renderStatus(); renderActions();
+}
+
+function setMode(m){
+  stopTimer();
+  S.mode = m; S.running=false; S.ended=false; S.score=0; S.streak=0; S.qTarget=null;
+  document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected', t.dataset.mode===m));
+  $('stage').classList.toggle('static', m==='quick' || m==='study');
+  $('overlay').hidden = true;
+  $('stageHint').textContent = m==='study' ? 'Tap any highlighted group (or a name) to see why it is that group'
+    : m==='quick' ? 'Name the highlighted group as fast as you can'
+    : 'Tap atoms (or drag across them) to select a group · drag on empty space to lasso · tap empty space to clear';
+  $('bankTitle').textContent = m==='study' ? 'Groups' : 'Name the group';
+  buildChips();
+  if (m==='practice' || m==='study') nextMolecule();
+  else { loadMolecule(drawFrom(m==='quick'?2:1)); showIntro(m); }
+  renderStatus(); renderActions();
+}
+
+/* ----- challenge & quick fire ----- */
+let timerId = null, lastTick = 0;
+function startTimer(sec){
+  S.timeLeft = S.timeTotal = sec; lastTick = performance.now();
+  timerId = setInterval(()=>{
+    const now = performance.now(), dt = (now-lastTick)/1000; lastTick = now;
+    if (S.paused || document.hidden) return;
+    S.timeLeft = Math.max(0, S.timeLeft - dt);
+    renderTimer();
+    if (S.timeLeft<=0) endRun();
+  }, 100);
+}
+function stopTimer(){ clearInterval(timerId); timerId=null; }
+function renderTimer(){
+  const t = $('timerBar'); if (!t) return;
+  t.querySelector('i').style.width = (100*S.timeLeft/S.timeTotal)+'%';
+  t.classList.toggle('low', S.timeLeft<10);
+  const s = Math.ceil(S.timeLeft);
+  $('timeLeft').textContent = `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+}
+function showIntro(m){
+  const best = m==='challenge' ? stats.bestC : stats.bestQ;
+  $('ovCard').innerHTML = m==='challenge'
+    ? `<h2>Challenge</h2><p>3 minutes. Molecules get harder as you go, and esters join in at the end. Find every group to move on. Your streak multiplies your points (up to ×4), and finishing a molecule with no mistakes earns a bonus.</p><p>Best score: <b>${best.toLocaleString()}</b></p><button class="btn primary" id="goBtn">Start</button>`
+    : `<h2>Quick Fire</h2><p>60 seconds. A group is highlighted; tap its name. Wrong answers pause the clock while you read why.</p><p>Best: <b>${best}</b></p><button class="btn primary" id="goBtn">Start</button>`;
+  $('overlay').hidden = false;
+  $('goBtn').onclick = () => startRun(m);
+  $('goBtn').focus();
+  feedback('', 'Ready?', 'Press <b>Start</b> when you’re ready.');
+}
+function startRun(m){
+  $('overlay').hidden = true; S.ended = false;
+  S.running = true; S.score=0; S.streak=0; S.cStats={right:0,wrong:0}; S.qCorrect=0; S.qWrong=0; S.paused=false; S.cIndex=-1; S.cDone=0;
+  if (m==='challenge'){ nextMolecule(); startTimer(180); }
+  else { nextQuick(); startTimer(60); }
+  renderStatus(); renderActions(); renderTimer();
+}
+function endRun(){
+  stopTimer(); S.running=false; S.paused=false; S.ended=true;
+  feedback('', 'Round over', 'Press <b>Play again</b> for another round, or switch to Practice to work on the groups you missed.');
+  const m = S.mode;
+  let newBest=false, html;
+  if (m==='challenge'){
+    if (S.score > stats.bestC){ stats.bestC = S.score; newBest = true; }
+    const acc = S.cStats.right+S.cStats.wrong ? Math.round(100*S.cStats.right/(S.cStats.right+S.cStats.wrong)) : 0;
+    html = `<h2>Time’s up!</h2><div class="big">${S.score.toLocaleString()}</div>${newBest?'<div class="newbest">New best score!</div>':`<div style="color:var(--muted)">Best: ${stats.bestC.toLocaleString()}</div>`}
+      <div class="row"><div class="stat"><b>${S.cStats.right}</b><span>Groups found</span></div><div class="stat"><b>${acc}%</b><span>Accuracy</span></div><div class="stat"><b>${S.cDone}</b><span>Molecules done</span></div></div>`;
+  } else {
+    if (S.qCorrect > stats.bestQ){ stats.bestQ = S.qCorrect; newBest = true; }
+    const acc = S.qCorrect+S.qWrong ? Math.round(100*S.qCorrect/(S.qCorrect+S.qWrong)) : 0;
+    html = `<h2>Time’s up!</h2><div class="big">${S.qCorrect}</div>${newBest?'<div class="newbest">New best!</div>':`<div style="color:var(--muted)">Best: ${stats.bestQ}</div>`}
+      <div class="row"><div class="stat"><b>${acc}%</b><span>Accuracy</span></div><div class="stat"><b>${stats.bestStreak}</b><span>Best streak ever</span></div></div>`;
+  }
+  checkBadges();
+  $('ovCard').innerHTML = html + `<button class="btn primary" id="againBtn">Play again</button>`;
+  $('overlay').hidden = false; $('againBtn').onclick = () => startRun(m);
+  S.qTarget = null; drawDynamic(); renderStatus(); renderActions();
+}
+const qBag = [];
+function nextQuick(){
+  if (!qBag.length){ qBag.push(...CORE, ...CORE); for (let i=qBag.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [qBag[i],qBag[j]]=[qBag[j],qBag[i]]; } }
+  const t = qBag.pop();
+  const pool = [];
+  INFO.forEach((info,i)=>info.G.forEach((g,k)=>{ if (g.type===t && i!==S.idx) pool.push([i,k]); }));
+  const [i,k] = pool[Math.floor(Math.random()*pool.length)];
+  loadMolecule(i); S.qTarget = k; S.paused=false; drawDynamic();
+  feedback('', 'What group is highlighted?', 'Tap its name (or press its number key).');
+  renderActions();
+}
+function quickAnswer(type, chipEl){
+  if (!S.running || S.paused || S.qTarget===null) return;
+  const info = INFO[S.idx], g = info.G[S.qTarget];
+  if (type===g.type){
+    S.qCorrect++; S.streak++; stats.bestStreak=Math.max(stats.bestStreak,S.streak); stats.g[g.type].r++;
+    floatText('+1', chipEl, gcol(g.type));
+    feedback('good', `${NAME[g.type]}!`, why(info,g));
+    S.paused = true; setTimeout(()=>{ if (S.running) nextQuick(); renderStatus(); }, 650);
+  } else {
+    S.qWrong++; S.streak=0; stats.g[g.type].m++; S.paused = true; shake();
+    const sel = new Set(g.req);
+    const res = evaluate(info, sel, type, new Set());
+    feedback('bad', `Not ${LOWER[type]}`, (res.msg||'') + ` <br><span style="color:var(--muted)">It’s <b style="color:${gcol(g.type)}">${LOWER[g.type]}</b>. The clock is paused.</span>`);
+  }
+  checkBadges(); renderStatus(); renderActions();
+}
+
+/* ----- study ----- */
+function showStudyInfo(type){
+  const info = INFO[S.idx], G = info.G;
+  if (S.studyPick!==null){
+    const g = G[S.studyPick];
+    feedback('', `<span style="color:${gcol(g.type)}">${NAME[g.type]}</span>`, why(info,g) + `<br><span style="color:var(--muted);font-size:.85rem">Atoms to select: ${selectText(g.type)}</span>`);
+  } else if (type){
+    feedback('', NAME[type], `There’s no ${NAME[type].toLowerCase()} in this molecule. ${GUIDE[type][0]}`);
+  } else {
+    feedback('', 'Study this molecule', `It has <b>${G.length}</b> group${G.length>1?'s':''}: ${[...new Set(G.map(g=>NAME[g.type]))].join(', ')}. Tap a group to see why it is that group.`);
+  }
+}
+const GUIDE = {
+  alcohol:['An O–H on a carbon that has no C=O. An O–H on a benzene ring (phenol) counts as an alcohol here.','the O–H'],
+  ether:['An O bonded to two carbons, with no H and no C=O on either carbon.','the O'],
+  amine:['An N bonded only to carbons and hydrogens, with no C=O carbon attached.','the N (with its H’s)'],
+  aldehyde:['A C=O whose carbon is bonded to an H (the H is drawn for you).','the C=O carbon, its O, and the H on that carbon'],
+  ketone:['A C=O whose carbon is bonded to two carbons.','the C=O carbon and its O'],
+  acid:['A C=O whose carbon also has an O–H (–COOH). That O–H is not an alcohol!','the C=O carbon, its O, and the O–H'],
+  amide:['A C=O whose carbon is bonded to an N. That N is not an amine!','the C=O carbon, its O, and the N'],
+  aromatic:['A benzene (phenyl) ring: six carbons with alternating double bonds.','all six ring carbons'],
+  ester:['A C=O whose carbon is bonded to an O that is bonded to another carbon. That O is not an ether!','the C=O carbon, its O, the single-bonded O, and the carbon attached to that O'],
+};
+const selectText = t => GUIDE[t][1];
+
+/* ---------------- status & actions ---------------- */
+function renderStatus(){
+  const box = $('statusBox');
+  if (S.mode==='practice' || S.mode==='study'){
+    const lv = [1,2,3,4,5].map(l=>{
+      const tot = MOLS.filter(m=>m.lv===l).length, done = (stats.cleared[l]||[]).length;
+      return `<button class="lvl" data-level="${l}" aria-pressed="${S.level===l}" title="${LEVELS[l]}: ${done}/${tot} completed">${l}<span class="bar"><i style="width:${100*done/tot}%"></i></span></button>`;
+    }).join('');
+    box.innerHTML = `<h3><span>Level</span><span style="text-transform:none;letter-spacing:0;font-weight:600">${(stats.cleared[S.level]||[]).length}/${MOLS.filter(m=>m.lv===S.level).length} done</span></h3><div class="levels">${lv}</div><div class="lvl-desc">${LEVELS[S.level]}</div>`
+      + (S.mode==='practice' ? `<div class="scores"><div class="stat"><span>Score</span><b>${S.score.toLocaleString()}</b></div><div class="stat"><span>Streak</span><b>${S.streak}${mult()>1?`<span class="mult">×${mult()}</span>`:''}</b></div></div>` : '');
+    box.querySelectorAll('.lvl').forEach(b=>b.onclick=()=>{ S.level=+b.dataset.level; buildChips(); nextMolecule(); });
+  } else {
+    const isC = S.mode==='challenge';
+    box.innerHTML = `<h3><span>${isC?'Challenge':'Quick Fire'}</span><span class="timeleft" id="timeLeft">${S.ended?'0:00':isC?'3:00':'1:00'}</span></h3><div class="timer" id="timerBar"><i></i></div>
+      <div class="scores"><div class="stat"><span>${isC?'Score':'Correct'}</span><b>${isC?S.score.toLocaleString():S.qCorrect}</b></div><div class="stat"><span>Streak</span><b>${S.streak}${isC&&mult()>1?`<span class="mult">×${mult()}</span>`:''}</b></div><div class="stat"><span>Best</span><b>${(isC?stats.bestC:stats.bestQ).toLocaleString()}</b></div></div>`;
+    if (S.running) renderTimer();
+    else if (S.ended){ const t=$('timerBar').querySelector('i'); t.style.width='0%'; }
+  }
+}
+const ICON = {
+  clear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  hint:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3Z"/></svg>',
+  next:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  eye:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+  prev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
+};
+function renderActions(){
+  const a = $('actions'); let h = '';
+  if (S.mode==='practice'){
+    if (S.done || S.revealed) h = `<button class="btn primary glow" id="nextBtn">Next molecule ${ICON.next}</button>`;
+    else h = `<button class="btn" id="clearBtn" ${S.sel.size?'':'disabled'}>${ICON.clear}Clear</button><button class="btn" id="hintBtn">${ICON.hint}Hint</button><button class="btn" id="revealBtn">${ICON.eye}Answer</button><button class="btn" id="nextBtn" title="Skip">${ICON.next}</button>`;
+  } else if (S.mode==='challenge'){
+    h = `<button class="btn" id="clearBtn" ${S.running&&S.sel.size?'':'disabled'}>${ICON.clear}Clear</button><button class="btn" id="skipBtn" ${S.running&&!S.done?'':'disabled'}>Skip ${ICON.next}</button><button class="btn" id="endBtn" ${S.running?'':'disabled'}>End</button>`;
+  } else if (S.mode==='quick'){
+    h = `<button class="btn primary ${S.running&&S.paused&&S.qWrong?'glow':''}" id="contBtn" ${S.running&&S.paused?'':'disabled'}>Continue ${ICON.next}</button><button class="btn" id="endBtn" ${S.running?'':'disabled'}>End</button>`;
+  } else {
+    h = `<button class="btn primary" id="nextBtn">Next molecule ${ICON.next}</button>`;
+  }
+  a.innerHTML = h;
+  const on = (id, fn) => { const el=$(id); if (el) el.onclick=fn; };
+  on('clearBtn', ()=>{ S.sel.clear(); drawDynamic(); updateChips(); renderActions(); });
+  on('nextBtn', nextMolecule);
+  on('hintBtn', giveHint);
+  on('revealBtn', reveal);
+  on('skipBtn', ()=>{ S.streak=0; feedback('near','Skipped','Streak reset. On to the next one!'); nextMolecule(); });
+  on('endBtn', endRun);
+  on('contBtn', ()=>{ if (S.running) nextQuick(); renderStatus(); });
+}
+
+function giveHint(){
+  const G = INFO[S.idx].G;
+  const left = G.map((g,k)=>k).filter(k=>!S.found.has(k));
+  if (!left.length) return;
+  const counts = {}; left.forEach(k=>counts[G[k].type]=(counts[G[k].type]||0)+1);
+  if (S.hint===null){
+    // first hint: point at a group (halves its points)
+    S.hint = left[0]; S.hinted.add(left[0]);
+    feedback('near','Hint','Look at the circled atoms. Which group do they make? <span style="color:var(--muted)">(Hinted groups earn half points.)</span>');
+  } else {
+    const g = G[S.hint];
+    feedback('near','Bigger hint', `The circled atoms form ${LOWER[g.type]}. ${GUIDE[g.type][0]}`);
+  }
+  drawDynamic();
+}
+function reveal(){
+  S.revealed = true; S.sel.clear(); S.streak = 0;
+  const info = INFO[S.idx];
+  feedback('', 'Answer', `<ul>${info.G.map(g=>`<li><b style="color:${gcol(g.type)}">${NAME[g.type]}</b>: ${why(info,g)}</li>`).join('')}</ul>`);
+  drawDynamic(); renderActions(); renderStatus();
+}
+
+/* ---------------- modals ---------------- */
+$('guide').innerHTML = TYPES.map(t=>`<div class="g-item" style="--c:${gcol(t)}"><b>${NAME[t]}${t==='ester'?' <small>(Level 5 &amp; Challenge)</small>':''}</b>${GUIDE[t][0]}<br><small>Select: ${GUIDE[t][1]}</small></div>`).join('');
+function openModal(id){ $(id).hidden=false; $(id).querySelector('[data-close]').focus(); if (S.running) S.paused = S.paused || 'modal'; }
+function closeModals(){ document.querySelectorAll('.modal').forEach(m=>m.hidden=true); if (S.paused==='modal') S.paused=false; }
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click', e=>{ if (e.target===m || e.target.closest('[data-close]')) closeModals(); }));
+$('helpBtn').onclick = ()=>openModal('helpModal');
+$('progBtn').onclick = ()=>{ renderProgress(); openModal('progModal'); };
+function renderProgress(){
+  const rows = TYPES.map(t=>{ const {r,m} = stats.g[t], n=r+m, pct = n?Math.round(100*r/n):0;
+    return `<div class="m-row" style="--c:${gcol(t)}"><span>${NAME[t]}</span><span class="track"><i style="width:${pct}%"></i></span><em>${n?pct+'%':'–'}</em></div>`; }).join('');
+  const lv = [1,2,3,4,5].map(l=>{ const tot=MOLS.filter(m=>m.lv===l).length, d=(stats.cleared[l]||[]).length; return `<div class="stat"><span>Level ${l}</span><b>${d}<small style="font-size:.8rem;color:var(--muted)">/${tot}</small></b></div>`; }).join('');
+  $('progBody').innerHTML = `<div class="scores" style="margin:0">${lv}</div>
+    <div class="scores"><div class="stat"><span>Groups found</span><b>${total()}</b></div><div class="stat"><span>Best Challenge</span><b>${stats.bestC.toLocaleString()}</b></div><div class="stat"><span>Best Quick Fire</span><b>${stats.bestQ}</b></div><div class="stat"><span>Best streak</span><b>${stats.bestStreak}</b></div></div>
+    <h4>Accuracy by group</h4><div class="mastery">${rows}</div>
+    <h4>Badges · ${stats.badges.length}/${BADGES.length}</h4><div class="badges">${BADGES.map(b=>`<div class="badge ${stats.badges.includes(b.id)?'':'locked'}"><span class="medal">${b.icon}</span><span><b>${b.name}</b>${b.desc}</span></div>`).join('')}</div>
+    <p style="font-size:.8rem;color:var(--muted);margin:.9rem 0 0">Progress is saved in this browser only.</p>`;
+}
+$('resetBtn').onclick = ()=>{ if (confirm('Reset all scores, progress and badges?')){ stats = blankStats(); save(); renderProgress(); renderStatus(); } };
+
+/* ---------------- theme & keys ---------------- */
+try { const t = localStorage.getItem('fgfinder.theme'); if (t) document.documentElement.dataset.theme = t; } catch(e){}
+$('themeBtn').onclick = ()=>{
+  const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme==='dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  try { localStorage.setItem('fgfinder.theme', document.documentElement.dataset.theme); } catch(e){}
+};
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>setMode(t.dataset.mode));
+document.addEventListener('keydown', e=>{
+  if (e.target.closest('input,textarea')) return;
+  if (e.key==='Escape'){ if (!document.querySelector('.modal:not([hidden])')){ S.sel.clear(); drawDynamic(); updateChips(); } closeModals(); return; }
+  if (document.querySelector('.modal:not([hidden])')) return;
+  const n = parseInt(e.key,10);
+  if (n>=1 && n<=9){ const c = document.querySelectorAll('.chip')[n-1]; if (c) answer(c.dataset.type, c); }
+  if (e.key==='Enter' && e.target===document.body){ const b = $('nextBtn')||$('contBtn'); if (b && !b.disabled) b.click(); }
+});
+window.addEventListener('resize', ()=>drawDynamic());
+
+window.__fgf = {MOLS, INFO, analyze, evaluate};
+setMode('practice');
+</script>
+</body>
+</html>
